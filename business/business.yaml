@@ -1,0 +1,26 @@
+# FICTIONAL business. Fernwick Commercial Cleaning does not exist; it was invented for this demo.
+# Its name, services, rates and FAQ are made up and do not describe any real company.
+
+name: Fernwick Commercial Cleaning
+fictional: true
+reply_from: quotes@fernwick.example
+signoff: The Fernwick team
+
+# Keywords the deterministic extractor maps to each service id in pricing.yaml.
+service_keywords:
+  regular_office: [regular clean, regular office, routine clean, office clean, janitorial, ongoing clean, contract clean, recurring clean]
+  deep_clean: [deep clean, deep-clean, spring clean, one-off clean, move-out clean, end of lease]
+  carpet_cleaning: [carpet clean, carpet shampoo, steam clean the carpet, carpets cleaned, carpet cleaning]
+
+add_on_keywords:
+  kitchen_appliances: [fridge, microwave]
+  interior_windows: [interior window, inside window, internal window, inside of the windows]
+  washroom_supplies: [washroom supplies, restroom supplies, toilet paper, hand soap, soap and paper]
+
+faq:
+  - q: Do you bring your own supplies and equipment?
+    a: Yes. Cleaning products and equipment are included in every quote.
+  - q: Are you insured?
+    a: Yes, and a certificate is available on request.
+  - q: Can we change the schedule later?
+    a: Yes. The price is re-quoted from the same rate card when the frequency changes.

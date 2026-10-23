@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC sample written for this demo. All people, companies and addresses are invented.",
+  "id": "s11-out-of-scope",
+  "source": "email",
+  "received_at": "2026-10-23T09:00:00Z",
+  "from": "Gina Russo <gina@russo-logistics.example>",
+  "subject": "Pressure washing",
+  "body": "Hi,\n\nCan you pressure wash the front entrance and the loading dock? Around 1,000 sq ft of concrete.\n\nGina"
+}

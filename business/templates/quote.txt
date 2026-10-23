@@ -1,0 +1,16 @@
+Subject: Your cleaning quote from $business
+Hi $first_name,
+
+Thanks for getting in touch. Here is our price for the work you described.
+
+$line_items
+
+Total: $total $period
+
+This price assumes:
+$assumptions
+
+The quote is valid for $valid_days days. Reply to this email to book a start date. If anything above is wrong, tell us and we will re-price it.
+
+$signoff
+$business

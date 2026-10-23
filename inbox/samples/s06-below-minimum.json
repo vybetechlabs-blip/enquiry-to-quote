@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC sample written for this demo. All people, companies and addresses are invented.",
+  "id": "s06-below-minimum",
+  "source": "email",
+  "received_at": "2026-10-23T09:00:00Z",
+  "from": "Aisha Noor <aisha@noor-tax.example>",
+  "subject": "Small office cleaning",
+  "body": "Hello,\n\nWe're a two-person tax practice in a 600 sq ft office. We'd like a regular clean once a week.\n\nAisha Noor"
+}

@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC sample written for this demo. All people, companies and addresses are invented.",
+  "id": "s10-two-sites",
+  "source": "email",
+  "received_at": "2026-10-23T09:00:00Z",
+  "from": "Owen Price <owen.price@keystone-property.example>",
+  "subject": "Cleaning for two offices",
+  "body": "Hi,\n\nWe have two offices: the main office is 3,000 sq ft and the branch office is 1,500 sq ft. We'd like regular cleaning for both, weekly.\n\nThanks,\nOwen Price\nKeystone Property Management"
+}

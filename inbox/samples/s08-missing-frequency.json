@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC sample written for this demo. All people, companies and addresses are invented.",
+  "id": "s08-missing-frequency",
+  "source": "email",
+  "received_at": "2026-10-23T09:00:00Z",
+  "from": "Sam Whitlock <sam@whitlock-design.example>",
+  "subject": "Office cleaning",
+  "body": "Hi,\n\nLooking for ongoing office cleaning for our 3,000 sq ft office. What would that cost?\n\nSam"
+}

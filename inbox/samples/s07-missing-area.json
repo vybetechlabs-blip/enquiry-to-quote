@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC sample written for this demo. All people, companies and addresses are invented.",
+  "id": "s07-missing-area",
+  "source": "email",
+  "received_at": "2026-10-23T09:00:00Z",
+  "from": "Dr. Felix Grant <frontdesk@grant-dental.example>",
+  "subject": "Cleaning for our practice",
+  "body": "Hi,\n\nWe need a regular cleaner for our dental practice's reception and offices, weekly on Saturday mornings. Can you give us a quote?\n\nFelix Grant"
+}

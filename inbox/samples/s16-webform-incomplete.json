@@ -1,0 +1,17 @@
+{
+  "_synthetic": "SYNTHETIC sample written for this demo. All people, companies and addresses are invented.",
+  "id": "s16-webform-incomplete",
+  "source": "webform",
+  "received_at": "2026-10-23T09:00:00Z",
+  "fields": {
+    "name": "Ben Carter",
+    "email": "ben@carter-co.example",
+    "company": "Carter & Co",
+    "service": "Regular office cleaning",
+    "frequency": "",
+    "area": "",
+    "area_unit": "",
+    "extras": "",
+    "message": "Please get in touch with a price."
+  }
+}

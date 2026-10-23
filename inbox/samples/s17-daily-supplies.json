@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC sample written for this demo. All people, companies and addresses are invented.",
+  "id": "s17-daily-supplies",
+  "source": "email",
+  "received_at": "2026-10-23T09:00:00Z",
+  "from": "Mei Lin <mei.lin@harrow-clinic.example>",
+  "subject": "Daily cleaning",
+  "body": "Hi,\n\nWe need daily cleaning (weekdays) of our 8,000 sq ft office, including restocking washroom supplies.\n\nThanks,\nMei Lin"
+}

@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC sample written for this demo. All people, companies and addresses are invented.",
+  "id": "s09-ambiguous-service",
+  "source": "email",
+  "received_at": "2026-10-23T09:00:00Z",
+  "from": "Rosa Delgado <rosa@delgado-insurance.example>",
+  "subject": "Cleaning question",
+  "body": "Hello,\n\nWe're not sure if we need a deep clean or a regular clean. The office hasn't been looked after properly for a while. It's about 2,500 sq ft. What would you suggest?\n\nRosa Delgado"
+}

@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC sample written for this demo. All people, companies and addresses are invented.",
+  "id": "s04-metric-units",
+  "source": "email",
+  "received_at": "2026-10-23T09:00:00Z",
+  "from": "Lena Hoffmann <lena@brightpath-labs.example>",
+  "subject": "Office cleaning enquiry",
+  "body": "Hi there,\n\nBrightpath Labs is looking for office cleaning. The office is 400 sqm and we would like it cleaned every week.\n\nBest,\nLena"
+}

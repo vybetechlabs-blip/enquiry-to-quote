@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC sample written for this demo. All people, companies and addresses are invented.",
+  "id": "s15-vendor-spam",
+  "source": "email",
+  "received_at": "2026-10-23T09:00:00Z",
+  "from": "Growth Team <hello@rankrocket-seo.example>",
+  "subject": "More clients for your cleaning business",
+  "body": "Hi there,\n\nI noticed your website isn't on the first page of search results. We help cleaning businesses like yours get 3x more leads with our SEO packages.\n\nReply YES and I'll send our rate sheet.\n\nUnsubscribe: reply STOP"
+}

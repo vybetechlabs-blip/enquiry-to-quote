@@ -1,0 +1,77 @@
+# FICTIONAL rate card for Fernwick Commercial Cleaning, an invented business used only for this demo.
+# Every rate here is made up. No real company's prices were copied.
+#
+# Rates are per unit of `area_unit` per visit. Enquiries quoted in the other unit are converted.
+# Every rule has an id; each quote lists the ids that produced it.
+
+area_unit: sqft            # sqft | sqm
+currency_symbol: "$"
+quote_valid_days: 30
+
+services:
+  regular_office:
+    label: Regular office cleaning
+    rule_id: SVC-REGULAR
+    rate_per_area: "0.07"
+    frequencies: [daily, weekly, fortnightly, monthly]
+  deep_clean:
+    label: Deep clean
+    rule_id: SVC-DEEP
+    rate_per_area: "0.22"
+    frequencies: [one_off]
+  carpet_cleaning:
+    label: Carpet cleaning
+    rule_id: SVC-CARPET
+    rate_per_area: "0.30"
+    frequencies: [one_off]
+
+# Per-visit multiplier on the service rate, and how many visits a month the quote assumes.
+frequencies:
+  daily:       { rule_id: FREQ-DAILY,       multiplier: "0.85", visits_per_month: 20, label: daily on weekdays }
+  weekly:      { rule_id: FREQ-WEEKLY,      multiplier: "0.95", visits_per_month: 4,  label: weekly }
+  fortnightly: { rule_id: FREQ-FORTNIGHTLY, multiplier: "1.00", visits_per_month: 2,  label: fortnightly }
+  monthly:     { rule_id: FREQ-MONTHLY,     multiplier: "1.10", visits_per_month: 1,  label: monthly }
+  one_off:     { rule_id: FREQ-ONE-OFF,     multiplier: "1.00", visits_per_month: 1,  label: one-off }
+
+# Applied per site, per visit, to the service charge plus add-ons.
+minimum_charge:
+  rule_id: MIN-VISIT
+  amount: "120.00"
+
+add_ons:
+  kitchen_appliances:
+    label: Fridge and microwave clean
+    rule_id: ADD-KITCHEN
+    kind: flat            # flat amount per visit
+    amount: "35.00"
+  interior_windows:
+    label: Interior window cleaning
+    rule_id: ADD-WINDOWS
+    kind: per_area        # rate per unit of area per visit
+    amount: "0.04"
+  washroom_supplies:
+    label: Washroom supplies restock
+    rule_id: ADD-SUPPLIES
+    kind: flat
+    amount: "20.00"
+
+# Two or more sites in one enquiry: each site is priced on its own (with its own minimum),
+# then this discount comes off the total.
+multi_site:
+  rule_id: MULTI-SITE
+  min_sites: 2
+  discount: "0.05"
+
+# Outside these bounds a person prices the job; the agent hands off instead of quoting.
+sanity_band:
+  rule_id: SANITY
+  min_area_per_site: 150
+  max_area_per_site: 60000
+  max_monthly_total: "30000.00"
+
+# Services the business does not offer. A request for any of these goes to a person.
+out_of_scope:
+  pressure_washing: [pressure wash, pressure-wash, power wash, power-wash, jet wash]
+  exterior_windows: [exterior window, outside window, external window, high-rise window]
+  biohazard: [biohazard, crime scene, sharps]
+  pest_control: [pest control, extermination, fumigation]

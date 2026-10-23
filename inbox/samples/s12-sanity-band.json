@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC sample written for this demo. All people, companies and addresses are invented.",
+  "id": "s12-sanity-band",
+  "source": "email",
+  "received_at": "2026-10-23T09:00:00Z",
+  "from": "Victor Hale <v.hale@hale-freight.example>",
+  "subject": "Warehouse cleaning",
+  "body": "Hello,\n\nWe're a freight company and need weekly regular cleaning for our 900,000 sq ft warehouse.\n\nVictor Hale"
+}

@@ -1,0 +1,17 @@
+{
+  "_synthetic": "SYNTHETIC sample written for this demo. All people, companies and addresses are invented.",
+  "id": "s02-complete-webform",
+  "source": "webform",
+  "received_at": "2026-10-23T09:00:00Z",
+  "fields": {
+    "name": "Priya Raman",
+    "email": "priya@lumen-studio.example",
+    "company": "Lumen Studio",
+    "service": "Regular office cleaning",
+    "frequency": "Fortnightly",
+    "area": "2000",
+    "area_unit": "sq ft",
+    "extras": "Fridge and microwave clean",
+    "message": "Small design studio, mostly desks and a kitchenette."
+  }
+}

@@ -1,0 +1,79 @@
+# Golden set for inbox/samples/. SYNTHETIC: every enquiry is invented.
+# Expected values were written by hand from the sample text and the rate card, before the
+# extractor existed. They record what a careful person would read, not what RuleExtractor outputs.
+#
+# areas: list of [area, unit] per site, in the order the enquiry mentions them.
+# total: expected Quote.total as a string, only where the outcome is a quote.
+# missing: the fields a clarification must ask for (exactly these, nothing else).
+
+s01-complete-email:
+  extraction: {is_enquiry: true, contact_email: dana.okafor@northwind-accounting.example, service: regular_office, frequency: weekly, areas: [[4500, sqft]], add_ons: [], out_of_scope: []}
+  outcome: quote
+  total: "1197.00"      # 4500 x 0.07 x 0.95 = 299.25 a visit, x 4
+s02-complete-webform:
+  extraction: {is_enquiry: true, contact_email: priya@lumen-studio.example, service: regular_office, frequency: fortnightly, areas: [[2000, sqft]], add_ons: [kitchen_appliances], out_of_scope: []}
+  outcome: quote
+  total: "350.00"       # (140.00 + 35.00) x 2
+s03-deep-clean:
+  extraction: {is_enquiry: true, contact_email: m.bell@orchard-legal.example, service: deep_clean, frequency: one_off, areas: [[3200, sqft]], add_ons: [], out_of_scope: []}
+  outcome: quote
+  total: "704.00"       # 3200 x 0.22
+s04-metric-units:
+  extraction: {is_enquiry: true, contact_email: lena@brightpath-labs.example, service: regular_office, frequency: weekly, areas: [[400, sqm]], add_ons: [], out_of_scope: []}
+  outcome: quote
+  total: "1145.40"      # 400 sqm -> 4306 sq ft; 4306 x 0.07 x 0.95 = 286.35, x 4
+s05-carpet:
+  extraction: {is_enquiry: true, contact_email: tom.reyes@quarry-media.example, service: carpet_cleaning, frequency: one_off, areas: [[1200, sqft]], add_ons: [], out_of_scope: []}
+  outcome: quote
+  total: "360.00"       # 1200 x 0.30
+s06-below-minimum:
+  extraction: {is_enquiry: true, contact_email: aisha@noor-tax.example, service: regular_office, frequency: weekly, areas: [[600, sqft]], add_ons: [], out_of_scope: []}
+  outcome: quote
+  total: "480.00"       # 39.90 a visit, topped up to the 120.00 minimum, x 4
+s07-missing-area:
+  extraction: {is_enquiry: true, contact_email: frontdesk@grant-dental.example, service: regular_office, frequency: weekly, areas: [], add_ons: [], out_of_scope: []}
+  outcome: clarification
+  missing: [area]
+s08-missing-frequency:
+  extraction: {is_enquiry: true, contact_email: sam@whitlock-design.example, service: regular_office, frequency: null, areas: [[3000, sqft]], add_ons: [], out_of_scope: []}
+  outcome: clarification
+  missing: [frequency]
+s09-ambiguous-service:
+  extraction: {is_enquiry: true, contact_email: rosa@delgado-insurance.example, service: null, frequency: null, areas: [[2500, sqft]], add_ons: [], out_of_scope: []}
+  outcome: clarification
+  missing: [service, frequency]
+s10-two-sites:
+  extraction: {is_enquiry: true, contact_email: owen.price@keystone-property.example, service: regular_office, frequency: weekly, areas: [[3000, sqft], [1500, sqft]], add_ons: [], out_of_scope: []}
+  outcome: quote
+  total: "1214.10"      # 798.00 + (99.75 topped up to 120.00) x 4 = 1278.00, less 5% (63.90)
+s11-out-of-scope:
+  extraction: {is_enquiry: true, contact_email: gina@russo-logistics.example, service: null, frequency: null, areas: [[1000, sqft]], add_ons: [], out_of_scope: [pressure_washing]}
+  outcome: handoff
+s12-sanity-band:
+  extraction: {is_enquiry: true, contact_email: v.hale@hale-freight.example, service: regular_office, frequency: weekly, areas: [[900000, sqft]], add_ons: [], out_of_scope: []}
+  outcome: handoff
+s13-reply-chain:
+  extraction: {is_enquiry: true, contact_email: nadia@petrov-architects.example, service: regular_office, frequency: weekly, areas: [[5200, sqft]], add_ons: [], out_of_scope: []}
+  outcome: quote
+  total: "1383.20"      # 5200 x 0.07 x 0.95 = 345.80, x 4 (the 2,600 in the quoted history is stale)
+s14-prompt-injection:
+  extraction: {is_enquiry: true, contact_email: alex@moreno-consulting.example, service: regular_office, frequency: weekly, areas: [[2000, sqft]], add_ons: [], out_of_scope: []}
+  outcome: handoff
+s15-vendor-spam:
+  extraction: {is_enquiry: false, contact_email: hello@rankrocket-seo.example, service: null, frequency: null, areas: [], add_ons: [], out_of_scope: []}
+  outcome: handoff
+s16-webform-incomplete:
+  extraction: {is_enquiry: true, contact_email: ben@carter-co.example, service: regular_office, frequency: null, areas: [], add_ons: [], out_of_scope: []}
+  outcome: clarification
+  missing: [frequency, area]
+s17-daily-supplies:
+  extraction: {is_enquiry: true, contact_email: mei.lin@harrow-clinic.example, service: regular_office, frequency: daily, areas: [[8000, sqft]], add_ons: [washroom_supplies], out_of_scope: []}
+  outcome: quote
+  total: "9920.00"      # (8000 x 0.07 x 0.85 = 476.00 + 20.00) x 20
+s18-mixed-out-of-scope:
+  extraction: {is_enquiry: true, contact_email: sipho@ndlovu-group.example, service: regular_office, frequency: weekly, areas: [[2200, sqft]], add_ons: [], out_of_scope: [pressure_washing]}
+  outcome: handoff
+s19-monthly-windows:
+  extraction: {is_enquiry: true, contact_email: ella@novak-studio.example, service: regular_office, frequency: monthly, areas: [[1800, sqft]], add_ons: [interior_windows], out_of_scope: []}
+  outcome: quote
+  total: "210.60"       # 1800 x 0.07 x 1.10 = 138.60 + 1800 x 0.04 = 72.00, one visit

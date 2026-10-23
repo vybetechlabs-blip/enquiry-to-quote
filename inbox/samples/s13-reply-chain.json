@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC sample written for this demo. All people, companies and addresses are invented.",
+  "id": "s13-reply-chain",
+  "source": "email",
+  "received_at": "2026-10-23T09:00:00Z",
+  "from": "Nadia Petrov <nadia@petrov-architects.example>",
+  "subject": "Re: Your cleaning enquiry",
+  "body": "Thanks for getting back to us. Since then we've taken on the second floor, so it's now 5,200 sq ft in total. Still regular cleaning, weekly.\n\nNadia\n\nOn Mon, 19 Oct 2026, Fernwick Commercial Cleaning <quotes@fernwick.example> wrote:\n> Thanks for your enquiry. Could you confirm the floor area?\n>\n> > We need regular office cleaning for our 2,600 sq ft office, weekly.\n> > Nadia Petrov"
+}

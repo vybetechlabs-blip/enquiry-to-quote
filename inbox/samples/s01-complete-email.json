@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC sample written for this demo. All people, companies and addresses are invented.",
+  "id": "s01-complete-email",
+  "source": "email",
+  "received_at": "2026-10-23T09:00:00Z",
+  "from": "Dana Okafor <dana.okafor@northwind-accounting.example>",
+  "subject": "Cleaning quote for our office",
+  "body": "Hi,\n\nWe're an accounting firm looking for a regular office cleaning contract. Our office is about 4,500 sq ft on one floor, and we'd like someone to come in weekly, ideally Friday evenings.\n\nCould you send a price?\n\nThanks,\nDana Okafor\nOffice Manager, Northwind Accounting"
+}

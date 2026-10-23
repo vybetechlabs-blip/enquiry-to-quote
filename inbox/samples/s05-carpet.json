@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC sample written for this demo. All people, companies and addresses are invented.",
+  "id": "s05-carpet",
+  "source": "email",
+  "received_at": "2026-10-23T09:00:00Z",
+  "from": "Tom Reyes <tom.reyes@quarry-media.example>",
+  "subject": "Carpet cleaning quote",
+  "body": "Hi,\n\nCould you quote to have the carpets cleaned in our meeting rooms and open-plan area? It's about 1,200 sq ft of carpet.\n\nThanks,\nTom"
+}

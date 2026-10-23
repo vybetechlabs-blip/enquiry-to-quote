@@ -1,0 +1,11 @@
+Subject: A few details for your cleaning quote
+Hi $first_name,
+
+Thanks for your enquiry. Before we can price it, we need to know:
+
+$questions
+
+Once we have these, we will send you a quote.
+
+$signoff
+$business

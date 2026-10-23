@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC sample written for this demo. All people, companies and addresses are invented.",
+  "id": "s18-mixed-out-of-scope",
+  "source": "email",
+  "received_at": "2026-10-23T09:00:00Z",
+  "from": "Sipho Ndlovu <sipho@ndlovu-group.example>",
+  "subject": "Office cleaning and car park",
+  "body": "Hello,\n\nWe'd like a weekly office clean for our 2,200 sq ft office, and could you also power wash the car park?\n\nSipho"
+}
