@@ -865,7 +865,7 @@
     }
   ],
   "golden_file": "eval/golden.yaml",
-  "golden_sha": "4a98227975ef",
+  "golden_sha": "9e635d4c826a",
   "prompt_sha": "00398ad6cd42",
   "status": "ok",
   "skip_reason": null,
@@ -876,6 +876,7 @@
     "seed": "not offered"
   },
   "notes": [
-    "2026-10-25: re-scored from saved outputs against eval/golden.yaml 4a98227975ef (run was scored against b4ac733b487b) with the current pricing code; new calls: s24-casual-carpets (new case), s25-oversized-no-schedule (new case)"
+    "2026-10-25: re-scored from saved outputs against eval/golden.yaml 4a98227975ef (run was scored against b4ac733b487b) with the current pricing code; new calls: s24-casual-carpets (new case), s25-oversized-no-schedule (new case)",
+    "2026-10-25: golden hash 4a98227975ef -> 9e635d4c826a after line-ending normalisation; content identical, outcomes unchanged"
   ]
 }

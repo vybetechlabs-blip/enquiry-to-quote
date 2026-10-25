@@ -38,13 +38,17 @@ Rows with several passes show the mean, then the lowest and highest pass in brac
 - `anthropic:claude-haiku-5-5@v1`: run 2026-10-25; prompt c721c7a1570d. Stale: scored on an earlier `eval/golden.yaml` (20 cases); kept for comparison.
 - `anthropic:claude-haiku-5-5@v2`: run 2026-10-25; prompt 00398ad6cd42; 3 passes; effort low, temperature not accepted, seed not offered.
   - 2026-10-25: re-scored from saved outputs against eval/golden.yaml 4a98227975ef (run was scored against b4ac733b487b) with the current pricing code; new calls: s24-casual-carpets (new case), s25-oversized-no-schedule (new case)
+  - 2026-10-25: golden hash 4a98227975ef -> 9e635d4c826a after line-ending normalisation; content identical, outcomes unchanged
 - `anthropic:claude-haiku-5-5@v2+guard`: run 2026-10-25; prompt 00398ad6cd42; 3 passes; effort low, temperature not accepted, seed not offered.
   - 2026-10-25: re-scored from saved outputs against eval/golden.yaml 4a98227975ef (run was scored against b4ac733b487b) with the current pricing code; new calls: s24-casual-carpets (new case), s25-oversized-no-schedule (new case)
+  - 2026-10-25: golden hash 4a98227975ef -> 9e635d4c826a after line-ending normalisation; content identical, outcomes unchanged
 - `ollama:gpt-oss:20b@v1`: run 2026-10-25; prompt c721c7a1570d. Stale: scored on an earlier `eval/golden.yaml` (20 cases); kept for comparison.
 - `ollama:gpt-oss:20b@v2`: run 2026-10-25; prompt 00398ad6cd42; 3 passes; temperature 0.0, seed 42.
   - 2026-10-25: re-scored from saved outputs against eval/golden.yaml 4a98227975ef (run was scored against b4ac733b487b) with the current pricing code; new calls: s01-complete-email (re-called: infrastructure failure), s02-complete-webform (re-called: infrastructure failure), s24-casual-carpets (new case), s25-oversized-no-schedule (new case)
+  - 2026-10-25: golden hash 4a98227975ef -> 9e635d4c826a after line-ending normalisation; content identical, outcomes unchanged
 - `ollama:gpt-oss:20b@v2+guard`: run 2026-10-25; prompt 00398ad6cd42; 3 passes; temperature 0.0, seed 42.
   - 2026-10-25: re-scored from saved outputs against eval/golden.yaml 4a98227975ef (run was scored against b4ac733b487b) with the current pricing code; new calls: s01-complete-email (re-called: infrastructure failure), s02-complete-webform (re-called: infrastructure failure), s24-casual-carpets (new case), s25-oversized-no-schedule (new case)
+  - 2026-10-25: golden hash 4a98227975ef -> 9e635d4c826a after line-ending normalisation; content identical, outcomes unchanged
 
 ### Outcome spread across passes
 

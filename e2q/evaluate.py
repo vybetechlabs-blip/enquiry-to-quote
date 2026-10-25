@@ -63,7 +63,8 @@ def normalize(name: str, value):
 
 
 def sha(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()[:12]
+    """Content hash of a golden file, with line endings normalised so CRLF and LF copies agree."""
+    return hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()[:12]
 
 
 @dataclass
