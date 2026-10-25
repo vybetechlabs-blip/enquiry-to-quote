@@ -243,7 +243,7 @@ def run_path(
 def save_run(result: EvalResult, golden_path: Path, runs_dir: Path | None = None) -> Path:
     path = run_path(result.extractor, golden_path, runs_dir, result.pass_index)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(result.to_json(), encoding="utf-8")
+    path.write_text(result.to_json(), encoding="utf-8", newline="\n")
     return path
 
 
@@ -621,4 +621,4 @@ def load_prices(path: Path = PRICES) -> dict:
 
 def write_report(sets: list[tuple[str, Path, list[EvalResult]]], path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(render_report(sets, load_prices()), encoding="utf-8")
+    path.write_text(render_report(sets, load_prices()), encoding="utf-8", newline="\n")
