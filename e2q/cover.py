@@ -19,18 +19,30 @@ discount or promise; the quote below your sentences carries the figures. No gree
 sign-off, no lists. Reply with the sentences only."""
 
 
-def make_cover_writer(provider: LLMProvider, business: Business) -> CoverWriter:
-    system = SYSTEM.format(name=business.profile.name)
+# v2 (owner instruction 2026-10-25): the greeting already carries the first name, so the note
+# must not repeat it. The name is no longer sent to the model at all.
+SYSTEM_V2 = (
+    SYSTEM
+    + """ Do not use the customer's name; the greeting above your sentences \
+already has it."""
+)
+
+
+def make_cover_writer(
+    provider: LLMProvider, business: Business, version: str = "v1"
+) -> CoverWriter:
+    system = (SYSTEM_V2 if version == "v2" else SYSTEM).format(name=business.profile.name)
 
     def write(enquiry: Enquiry, quote: Quote) -> str | None:
         card = business.rate_card
         service = card.services[enquiry.service].label if enquiry.service else "cleaning"
         freq = card.frequencies[enquiry.frequency].label if enquiry.frequency else ""
         sites = len(enquiry.sites)
-        prompt = (
-            f"Customer first name: {enquiry.contact_name or 'unknown'}\n"
-            f"Job: {service}, {freq}, {sites} site(s)."
-        )
+        job = f"Job: {service}, {freq}, {sites} site(s)."
+        if version == "v2":
+            prompt = job
+        else:
+            prompt = f"Customer first name: {enquiry.contact_name or 'unknown'}\n{job}"
         return provider.complete(system, prompt).text
 
     return write

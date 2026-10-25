@@ -11,9 +11,9 @@ import typer
 
 from e2q.config import load_business
 from e2q.draft import build_draft
-from e2q.extract import LLMExtractor, RuleExtractor
+from e2q.extract import GuardedExtractor, LLMExtractor, RuleExtractor
 from e2q.pricing import fmt_money
-from e2q.providers import ProviderUnavailable, make_provider
+from e2q.providers import CachedLLM, ProviderUnavailable, make_provider
 from e2q.queue import AlreadyIngested, ApprovalQueue, QueueError
 from e2q.schema import RawEnquiry
 from e2q.senders import SenderUnavailable, make_sender
@@ -78,6 +78,10 @@ def ingest(
         "--llm",
         help="LLM extraction and cover note, as provider:model (ollama or anthropic).",
     ),
+    prompt: str = typer.Option("v1", help="LLM prompt version: v1 or v2."),
+    guard: bool = typer.Option(
+        False, "--guard", help="With --llm: also run RuleExtractor; hand off when they disagree."
+    ),
 ) -> None:
     """Extract, price and draft each enquiry, then park the draft in the approval queue."""
     business = load_business(state.business_dir)
@@ -91,8 +95,10 @@ def ingest(
         except ProviderUnavailable as exc:
             typer.echo(f"LLM mode unavailable: {exc}", err=True)
             raise typer.Exit(2) from exc
-        extractor = LLMExtractor(business, provider)
-        cover_writer = make_cover_writer(provider, business)
+        extractor = LLMExtractor(business, provider, prompt)
+        if guard:
+            extractor = GuardedExtractor(extractor, RuleExtractor(business))
+        cover_writer = make_cover_writer(provider, business, prompt)
     else:
         extractor = RuleExtractor(business)
     queue = open_queue()
@@ -242,6 +248,11 @@ def eval_cmd(
     llm: list[str] = typer.Option(
         None, "--llm", help="Also run this LLM row (provider:model) and save it. Repeatable."
     ),
+    prompt: str = typer.Option("v1", help="LLM prompt version for --llm rows: v1 or v2."),
+    passes: int = typer.Option(1, min=1, help="Passes per --llm row (each saved separately)."),
+    guard: bool = typer.Option(
+        False, "--guard", help="Also score a +guard row from the same model outputs."
+    ),
 ) -> None:
     """Score RuleExtractor and every saved LLM row on each golden set; write eval/REPORT.md."""
     from e2q.evaluate import default_sets, run_eval, save_run, saved_runs, skipped, write_report
@@ -255,23 +266,41 @@ def eval_cmd(
         except ProviderUnavailable as exc:
             typer.echo(f"row {row} skipped: {exc}", err=True)
             for _, golden, _ in sets:
-                save_run(skipped(row, golden, str(exc)), golden)
+                skipped_row = row if prompt == "v1" else f"{row}@{prompt}"
+                save_run(skipped(skipped_row, golden, str(exc)), golden)
             continue
-        for title, golden, samples in sets:
-            typer.echo(f"running {row} on {title} ...", err=True)
-            result = run_eval(
-                business,
-                LLMExtractor(business, provider),
-                golden,
-                samples,
-                row=row,
-                progress=lambda c: typer.echo(
-                    f"  {c.sample_id:<28} {c.outcome:<14} {'MISS' if c.failed else 'ok'}"
-                    f"  {c.latency_s}s",
-                    err=True,
-                ),
+
+        def show(c):
+            typer.echo(
+                f"  {c.sample_id:<28} {c.outcome:<14} {'MISS' if c.failed else 'ok'}"
+                f"  {c.latency_s}s",
+                err=True,
             )
-            typer.echo(f"saved {save_run(result, golden)}", err=True)
+
+        for n in range(1, passes + 1):
+            # One model call per inquiry per pass; the guard row re-scores the same outputs.
+            cached = CachedLLM(provider)
+            for title, golden, samples in sets:
+                plain = LLMExtractor(business, cached, prompt)
+                typer.echo(f"pass {n}: {plain.row_name} on {title} ...", err=True)
+                result = run_eval(
+                    business,
+                    plain,
+                    golden,
+                    samples,
+                    row=plain.row_name,
+                    progress=show,
+                    pass_index=n,
+                )
+                typer.echo(f"saved {save_run(result, golden)}", err=True)
+                if guard:
+                    guarded = GuardedExtractor(
+                        LLMExtractor(business, cached, prompt), RuleExtractor(business)
+                    )
+                    result = run_eval(
+                        business, guarded, golden, samples, row=guarded.row_name, pass_index=n
+                    )
+                    typer.echo(f"saved {save_run(result, golden)}", err=True)
     sections = [
         (
             title,

@@ -90,7 +90,7 @@ def test_eval_records_a_skipped_llm_row(run, tmp_path, monkeypatch):
     result = run("eval", "--out", str(out), "--llm", "anthropic:claude-haiku-5-5")
     assert result.exit_code == 0, result.output
     text = out.read_text(encoding="utf-8")
-    assert "anthropic:claude-haiku-5-5 (skipped)" in text
+    assert "anthropic:claude-haiku-5-5@v1 (skipped)" in text
     assert "ANTHROPIC_API_KEY is not set" in text
     assert list((tmp_path / "runs").glob("anthropic_claude-haiku-5-5__*.json"))
 

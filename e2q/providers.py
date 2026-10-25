@@ -31,6 +31,7 @@ class CompletionResult:
 class LLMProvider(Protocol):
     name: str
     model: str
+    settings: dict
 
     def complete(self, system: str, prompt: str, schema: dict | None = None) -> CompletionResult:
         """One call. With `schema`, the reply must be JSON that matches it."""
@@ -48,6 +49,7 @@ class ScriptedLLM:
     model = "scripted"
 
     def __init__(self, responses: Iterable[str]):
+        self.settings: dict = {}
         self._responses = list(responses)
         self.calls: list[tuple[str, str]] = []
 
@@ -59,14 +61,25 @@ class ScriptedLLM:
 
 
 class OllamaLLM:
-    """Local Ollama over HTTP. Uses 127.0.0.1: `localhost` adds IPv6 fallback delay on Windows."""
+    """Local Ollama over HTTP. Uses 127.0.0.1: `localhost` adds IPv6 fallback delay on Windows.
+
+    Sampling is pinned (temperature 0, fixed seed) so repeated passes are comparable.
+    """
 
     name = "ollama"
 
-    def __init__(self, model: str, host: str = "http://127.0.0.1:11434", timeout: float = 600):
+    def __init__(
+        self,
+        model: str,
+        host: str = "http://127.0.0.1:11434",
+        timeout: float = 600,
+        temperature: float = 0.0,
+        seed: int = 42,
+    ):
         self.model = model
         self.host = host.rstrip("/")
         self.timeout = timeout
+        self.settings = {"temperature": temperature, "seed": seed}
 
     def _request(self, path: str, payload: dict | None = None) -> dict:
         data = json.dumps(payload).encode() if payload is not None else None
@@ -93,6 +106,7 @@ class OllamaLLM:
                 {"role": "user", "content": prompt},
             ],
             "stream": False,
+            "options": dict(self.settings),
         }
         if schema is not None:
             payload["format"] = schema
@@ -124,6 +138,8 @@ class AnthropicLLM:
         self.model = model
         self.max_tokens = max_tokens
         self.effort = effort
+        # The Messages API takes no temperature or seed on this model; effort is the only knob.
+        self.settings = {"effort": effort, "temperature": "not accepted", "seed": "not offered"}
         self._client = anthropic.Anthropic(api_key=api_key)
 
     def complete(self, system: str, prompt: str, schema: dict | None = None) -> CompletionResult:
@@ -149,6 +165,26 @@ class AnthropicLLM:
             latency_s=latency,
             model=self.model,
         )
+
+
+class CachedLLM:
+    """Wraps a provider and answers a repeated (system, prompt, schema) from memory.
+
+    Used to score the same model outputs twice (guard off and guard on) without a second call.
+    """
+
+    def __init__(self, inner: LLMProvider):
+        self.inner = inner
+        self.name = inner.name
+        self.model = inner.model
+        self.settings = getattr(inner, "settings", {})
+        self._memo: dict[str, CompletionResult] = {}
+
+    def complete(self, system: str, prompt: str, schema: dict | None = None) -> CompletionResult:
+        key = json.dumps([system, prompt, schema], sort_keys=True)
+        if key not in self._memo:
+            self._memo[key] = self.inner.complete(system, prompt, schema)
+        return self._memo[key]
 
 
 def make_provider(name: str, *, model: str | None = None, **kwargs) -> LLMProvider:

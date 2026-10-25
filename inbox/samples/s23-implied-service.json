@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC sample written for this demo. All people, companies and addresses are invented. Added 2026-10-25 as a hardening case (owner instruction after the three-row pass).",
+  "id": "s23-implied-service",
+  "source": "email",
+  "received_at": "2026-10-25T12:00:00Z",
+  "from": "Ivo Kranjc <ivo@kranjc-media.example>",
+  "subject": "Price?",
+  "body": "Hi there,\n\nOur team of twelve works out of a 2,000 sq ft office and we'd like it cleaned once a week. What's your price?\n\nIvo"
+}

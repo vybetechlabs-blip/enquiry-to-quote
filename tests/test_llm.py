@@ -160,3 +160,87 @@ def test_cover_note_failure_falls_back_to_the_template(business):
 def test_cover_note_number_rule(business, note, ok):
     quote = build_draft(make_enquiry(), business).quote
     assert cover_note_is_safe(note, quote) is ok
+
+
+# --- prompt v2, guard, cache, pinned sampling ---------------------------------------------
+
+
+def test_v1_prompt_is_unchanged_and_v2_adds_only_the_owner_changes(business):
+    import hashlib
+
+    from e2q.extract.llm import V2_CHANGES
+
+    v1 = build_system_prompt(business, "v1")
+    v2 = build_system_prompt(business, "v2")
+    assert hashlib.sha256(v1.encode()).hexdigest()[:12] == "c721c7a1570d"
+    for old, new in V2_CHANGES:
+        assert old in v1 and new in v2
+    rebuilt = v1
+    for old, new in V2_CHANGES:
+        rebuilt = rebuilt.replace(old, new)
+    assert rebuilt == v2
+    assert "never injection" in v2 and "ongoing" in v2
+
+
+def test_row_names_carry_the_prompt_version(business):
+    llm = ScriptedLLM([])
+    assert LLMExtractor(business, llm).row_name == "scripted:scripted"
+    assert LLMExtractor(business, llm, "v2").row_name == "scripted:scripted@v2"
+
+
+def test_guard_hands_off_when_extractors_disagree(business):
+    from e2q.extract import GuardedExtractor, RuleExtractor
+
+    # The model claims 9,000 sq ft; RuleExtractor reads 4,500 from s01.
+    bad = reply(sites=[{"label": "Site 1", "area": 9000, "area_unit": "sqft"}])
+    guarded = GuardedExtractor(LLMExtractor(business, ScriptedLLM([bad])), RuleExtractor(business))
+    enq = guarded.extract(load_sample("s01-complete-email"))
+    assert enq.needs_human == ["extractors_disagree:area"]
+    draft = build_draft(enq, business)
+    assert draft.kind == "handoff" and "disagree on: area" in draft.body
+    assert guarded.row_name == "scripted:scripted+guard"
+
+
+def test_guard_changes_nothing_when_extractors_agree(business):
+    from e2q.extract import GuardedExtractor, RuleExtractor
+
+    guarded = GuardedExtractor(
+        LLMExtractor(business, ScriptedLLM([reply()])), RuleExtractor(business)
+    )
+    enq = guarded.extract(load_sample("s01-complete-email"))
+    assert enq.needs_human == []
+    assert build_draft(enq, business).quote.total == 1197
+
+
+def test_cached_provider_answers_a_repeat_without_a_second_call(business):
+    from e2q.providers import CachedLLM
+
+    inner = ScriptedLLM([reply()])  # one response only: a second real call would fail
+    cached = CachedLLM(inner)
+    sample = load_sample("s01-complete-email")
+    first = LLMExtractor(business, cached).extract(sample)
+    second = LLMExtractor(business, cached).extract(sample)
+    assert first.service == second.service == "regular_office"
+    assert len(inner.calls) == 1
+
+
+def test_cover_note_v2_does_not_send_or_ask_for_the_name(business):
+    llm = ScriptedLLM(["Thanks for thinking of us for your weekly office clean."])
+    build_draft(make_enquiry(), business, make_cover_writer(llm, business, "v2"))
+    system, prompt = llm.calls[0]
+    assert "Pat" not in prompt and "first name" not in prompt
+    assert "Do not use the customer's name" in system
+
+
+def test_ollama_calls_pin_temperature_and_seed(monkeypatch):
+    from e2q.providers import OllamaLLM
+
+    sent = {}
+
+    def fake_request(self, path, payload=None):
+        sent.update(payload or {})
+        return {"message": {"content": "{}"}, "prompt_eval_count": 1, "eval_count": 1}
+
+    monkeypatch.setattr(OllamaLLM, "_request", fake_request)
+    OllamaLLM("gpt-oss:20b").complete("sys", "hi")
+    assert sent["options"] == {"temperature": 0.0, "seed": 42}

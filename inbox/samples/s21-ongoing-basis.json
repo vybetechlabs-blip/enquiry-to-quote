@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC sample written for this demo. All people, companies and addresses are invented. Added 2026-10-25 as a hardening case (owner instruction after the three-row pass).",
+  "id": "s21-ongoing-basis",
+  "source": "email",
+  "received_at": "2026-10-25T12:00:00Z",
+  "from": "Tomasz Wiles <tomasz@wiles-surveyors.example>",
+  "subject": "Office cleaning quote",
+  "body": "Hi,\n\nWe're after a cleaning firm to look after our 2,600 sq ft office on an ongoing basis. Could you send a quote?\n\nTomasz"
+}

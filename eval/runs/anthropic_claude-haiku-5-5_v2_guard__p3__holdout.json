@@ -1,0 +1,302 @@
+{
+  "extractor": "anthropic:claude-haiku-5-5@v2+guard",
+  "run_date": "2026-10-25",
+  "cases": [
+    {
+      "sample_id": "h01-weekly-plain",
+      "expected_outcome": "quote",
+      "outcome": "quote",
+      "expected_total": "1010.80",
+      "total": "1010.80",
+      "field_errors": [],
+      "clarification_exact": null,
+      "expected_missing": [],
+      "asked": [],
+      "reasons": [],
+      "detail": {},
+      "tokens_in": 2262,
+      "tokens_out": 178,
+      "latency_s": 1.72
+    },
+    {
+      "sample_id": "h02-every-other-week-form",
+      "expected_outcome": "quote",
+      "outcome": "handoff",
+      "expected_total": "336.00",
+      "total": null,
+      "field_errors": [],
+      "clarification_exact": null,
+      "expected_missing": [],
+      "asked": [],
+      "reasons": [
+        "extractors_disagree:service,frequency"
+      ],
+      "detail": {},
+      "tokens_in": 2238,
+      "tokens_out": 255,
+      "latency_s": 1.75
+    },
+    {
+      "sample_id": "h03-move-in-thorough",
+      "expected_outcome": "quote",
+      "outcome": "handoff",
+      "expected_total": "1100.00",
+      "total": null,
+      "field_errors": [],
+      "clarification_exact": null,
+      "expected_missing": [],
+      "asked": [],
+      "reasons": [
+        "extractors_disagree:service"
+      ],
+      "detail": {},
+      "tokens_in": 2269,
+      "tokens_out": 213,
+      "latency_s": 1.6
+    },
+    {
+      "sample_id": "h04-carpets-shampoo",
+      "expected_outcome": "quote",
+      "outcome": "handoff",
+      "expected_total": "270.00",
+      "total": null,
+      "field_errors": [],
+      "clarification_exact": null,
+      "expected_missing": [],
+      "asked": [],
+      "reasons": [
+        "extractors_disagree:service,frequency"
+      ],
+      "detail": {},
+      "tokens_in": 2218,
+      "tokens_out": 225,
+      "latency_s": 1.79
+    },
+    {
+      "sample_id": "h05-metric-fortnightly",
+      "expected_outcome": "quote",
+      "outcome": "quote",
+      "expected_total": "376.74",
+      "total": "376.74",
+      "field_errors": [],
+      "clarification_exact": null,
+      "expected_missing": [],
+      "asked": [],
+      "reasons": [],
+      "detail": {},
+      "tokens_in": 2229,
+      "tokens_out": 210,
+      "latency_s": 1.9
+    },
+    {
+      "sample_id": "h06-form-no-email",
+      "expected_outcome": "handoff",
+      "outcome": "handoff",
+      "expected_total": null,
+      "total": null,
+      "field_errors": [],
+      "clarification_exact": null,
+      "expected_missing": [],
+      "asked": [],
+      "reasons": [
+        "missing:contact_email"
+      ],
+      "detail": {},
+      "tokens_in": 2213,
+      "tokens_out": 178,
+      "latency_s": 1.34
+    },
+    {
+      "sample_id": "h07-twelve-desks-no-area",
+      "expected_outcome": "clarification",
+      "outcome": "clarification",
+      "expected_total": null,
+      "total": null,
+      "field_errors": [],
+      "clarification_exact": true,
+      "expected_missing": [
+        "area"
+      ],
+      "asked": [
+        "area"
+      ],
+      "reasons": [
+        "missing:area"
+      ],
+      "detail": {},
+      "tokens_in": 2227,
+      "tokens_out": 226,
+      "latency_s": 2.33
+    },
+    {
+      "sample_id": "h08-two-locations",
+      "expected_outcome": "quote",
+      "outcome": "quote",
+      "expected_total": "1972.20",
+      "total": "1972.20",
+      "field_errors": [],
+      "clarification_exact": null,
+      "expected_missing": [],
+      "asked": [],
+      "reasons": [],
+      "detail": {},
+      "tokens_in": 2252,
+      "tokens_out": 229,
+      "latency_s": 1.44
+    },
+    {
+      "sample_id": "h09-twice-a-week",
+      "expected_outcome": "handoff",
+      "outcome": "handoff",
+      "expected_total": null,
+      "total": null,
+      "field_errors": [],
+      "clarification_exact": null,
+      "expected_missing": [],
+      "asked": [],
+      "reasons": [
+        "unsupported_frequency:twice a week (Tuesday and Friday nights)",
+        "extractors_disagree:frequency"
+      ],
+      "detail": {},
+      "tokens_in": 2253,
+      "tokens_out": 261,
+      "latency_s": 1.87
+    },
+    {
+      "sample_id": "h10-ps-injection",
+      "expected_outcome": "handoff",
+      "outcome": "handoff",
+      "expected_total": null,
+      "total": null,
+      "field_errors": [],
+      "clarification_exact": null,
+      "expected_missing": [],
+      "asked": [],
+      "reasons": [
+        "injection:model_flagged"
+      ],
+      "detail": {},
+      "tokens_in": 2261,
+      "tokens_out": 208,
+      "latency_s": 1.89
+    },
+    {
+      "sample_id": "h11-job-applicant",
+      "expected_outcome": "handoff",
+      "outcome": "handoff",
+      "expected_total": null,
+      "total": null,
+      "field_errors": [
+        "contact_email"
+      ],
+      "clarification_exact": null,
+      "expected_missing": [],
+      "asked": [],
+      "reasons": [
+        "not_an_enquiry"
+      ],
+      "detail": {
+        "contact_email": {
+          "want": "lucia.ferreira@mailbox.example",
+          "got": null
+        }
+      },
+      "tokens_in": 2244,
+      "tokens_out": 124,
+      "latency_s": 1.12
+    },
+    {
+      "sample_id": "h12-glass-facade",
+      "expected_outcome": "handoff",
+      "outcome": "handoff",
+      "expected_total": null,
+      "total": null,
+      "field_errors": [],
+      "clarification_exact": null,
+      "expected_missing": [],
+      "asked": [],
+      "reasons": [
+        "out_of_scope:exterior_windows"
+      ],
+      "detail": {},
+      "tokens_in": 2237,
+      "tokens_out": 213,
+      "latency_s": 1.68
+    },
+    {
+      "sample_id": "h13-area-range",
+      "expected_outcome": "clarification",
+      "outcome": "handoff",
+      "expected_total": null,
+      "total": null,
+      "field_errors": [],
+      "clarification_exact": false,
+      "expected_missing": [
+        "area"
+      ],
+      "asked": [],
+      "reasons": [
+        "extractors_disagree:frequency,area"
+      ],
+      "detail": {},
+      "tokens_in": 2235,
+      "tokens_out": 242,
+      "latency_s": 1.71
+    },
+    {
+      "sample_id": "h14-kiosk-tiny",
+      "expected_outcome": "handoff",
+      "outcome": "handoff",
+      "expected_total": null,
+      "total": null,
+      "field_errors": [
+        "service"
+      ],
+      "clarification_exact": null,
+      "expected_missing": [],
+      "asked": [],
+      "reasons": [
+        "extractors_disagree:service"
+      ],
+      "detail": {
+        "service": {
+          "want": "regular_office",
+          "got": null
+        }
+      },
+      "tokens_in": 2221,
+      "tokens_out": 257,
+      "latency_s": 2.12
+    },
+    {
+      "sample_id": "h15-daily-fridge",
+      "expected_outcome": "quote",
+      "outcome": "handoff",
+      "expected_total": "5460.00",
+      "total": null,
+      "field_errors": [],
+      "clarification_exact": null,
+      "expected_missing": [],
+      "asked": [],
+      "reasons": [
+        "extractors_disagree:service,frequency,area"
+      ],
+      "detail": {},
+      "tokens_in": 2273,
+      "tokens_out": 187,
+      "latency_s": 1.39
+    }
+  ],
+  "golden_file": "eval/holdout.yaml",
+  "golden_sha": "1716cca67934",
+  "prompt_sha": "00398ad6cd42",
+  "status": "ok",
+  "skip_reason": null,
+  "pass_index": 3,
+  "settings": {
+    "effort": "low",
+    "temperature": "not accepted",
+    "seed": "not offered"
+  }
+}

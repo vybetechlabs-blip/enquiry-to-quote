@@ -94,6 +94,11 @@ def describe_reason(reason: str, business: Business) -> str:
         return f"The total ({total}) is above the automatic quote band."
     if kind == "unsupported_frequency":
         return f"The customer asked for a schedule the rate card does not offer ({detail!r})."
+    if kind == "extractors_disagree":
+        return (
+            f"The model and the rule-based reader disagree on: {detail.replace(',', ', ')}. "
+            "Check the inquiry before quoting."
+        )
     if kind == "extraction_failed":
         return f"The extraction step failed ({detail}), so nothing was read reliably."
     if kind == "missing" and detail == "contact_email":

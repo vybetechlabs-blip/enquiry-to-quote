@@ -1,0 +1,299 @@
+{
+  "extractor": "anthropic:claude-haiku-5-5@v2+guard",
+  "run_date": "2026-10-25",
+  "cases": [
+    {
+      "sample_id": "k01-monthly-bathrooms",
+      "expected_outcome": "quote",
+      "outcome": "quote",
+      "expected_total": "251.00",
+      "total": "251.00",
+      "field_errors": [],
+      "clarification_exact": null,
+      "expected_missing": [],
+      "asked": [],
+      "reasons": [],
+      "detail": {},
+      "tokens_in": 2243,
+      "tokens_out": 190,
+      "latency_s": 1.88
+    },
+    {
+      "sample_id": "k02-carpet-form",
+      "expected_outcome": "quote",
+      "outcome": "handoff",
+      "expected_total": "450.00",
+      "total": null,
+      "field_errors": [],
+      "clarification_exact": null,
+      "expected_missing": [],
+      "asked": [],
+      "reasons": [
+        "extractors_disagree:service"
+      ],
+      "detail": {},
+      "tokens_in": 2221,
+      "tokens_out": 185,
+      "latency_s": 1.48
+    },
+    {
+      "sample_id": "k03-handing-keys-back",
+      "expected_outcome": "quote",
+      "outcome": "handoff",
+      "expected_total": "616.00",
+      "total": null,
+      "field_errors": [],
+      "clarification_exact": null,
+      "expected_missing": [],
+      "asked": [],
+      "reasons": [
+        "extractors_disagree:service,frequency"
+      ],
+      "detail": {},
+      "tokens_in": 2258,
+      "tokens_out": 238,
+      "latency_s": 2.29
+    },
+    {
+      "sample_id": "k04-weekly-glass-partitions",
+      "expected_outcome": "quote",
+      "outcome": "quote",
+      "expected_total": "1065.00",
+      "total": "1065.00",
+      "field_errors": [],
+      "clarification_exact": null,
+      "expected_missing": [],
+      "asked": [],
+      "reasons": [],
+      "detail": {},
+      "tokens_in": 2235,
+      "tokens_out": 235,
+      "latency_s": 1.56
+    },
+    {
+      "sample_id": "k05-metric-every-working-day",
+      "expected_outcome": "quote",
+      "outcome": "handoff",
+      "expected_total": "2400.00",
+      "total": null,
+      "field_errors": [],
+      "clarification_exact": null,
+      "expected_missing": [],
+      "asked": [],
+      "reasons": [
+        "extractors_disagree:frequency"
+      ],
+      "detail": {},
+      "tokens_in": 2229,
+      "tokens_out": 269,
+      "latency_s": 2.2
+    },
+    {
+      "sample_id": "k06-large-daily",
+      "expected_outcome": "handoff",
+      "outcome": "handoff",
+      "expected_total": null,
+      "total": null,
+      "field_errors": [],
+      "clarification_exact": null,
+      "expected_missing": [],
+      "asked": [],
+      "reasons": [
+        "sanity:total:65450.00"
+      ],
+      "detail": {},
+      "tokens_in": 2261,
+      "tokens_out": 254,
+      "latency_s": 1.66
+    },
+    {
+      "sample_id": "k07-three-branches",
+      "expected_outcome": "quote",
+      "outcome": "quote",
+      "expected_total": "893.00",
+      "total": "893.00",
+      "field_errors": [],
+      "clarification_exact": null,
+      "expected_missing": [],
+      "asked": [],
+      "reasons": [],
+      "detail": {},
+      "tokens_in": 2251,
+      "tokens_out": 291,
+      "latency_s": 1.74
+    },
+    {
+      "sample_id": "k08-how-much",
+      "expected_outcome": "clarification",
+      "outcome": "clarification",
+      "expected_total": null,
+      "total": null,
+      "field_errors": [
+        "service"
+      ],
+      "clarification_exact": false,
+      "expected_missing": [
+        "frequency"
+      ],
+      "asked": [
+        "service",
+        "frequency"
+      ],
+      "reasons": [
+        "missing:service",
+        "missing:frequency"
+      ],
+      "detail": {
+        "service": {
+          "want": "regular_office",
+          "got": null
+        }
+      },
+      "tokens_in": 2186,
+      "tokens_out": 195,
+      "latency_s": 1.45
+    },
+    {
+      "sample_id": "k09-call-to-discuss",
+      "expected_outcome": "clarification",
+      "outcome": "handoff",
+      "expected_total": null,
+      "total": null,
+      "field_errors": [
+        "service"
+      ],
+      "clarification_exact": false,
+      "expected_missing": [
+        "service",
+        "frequency",
+        "area"
+      ],
+      "asked": [],
+      "reasons": [
+        "extractors_disagree:service"
+      ],
+      "detail": {
+        "service": {
+          "want": null,
+          "got": "regular_office"
+        }
+      },
+      "tokens_in": 2191,
+      "tokens_out": 186,
+      "latency_s": 2.21
+    },
+    {
+      "sample_id": "k10-mouse-problem",
+      "expected_outcome": "handoff",
+      "outcome": "handoff",
+      "expected_total": null,
+      "total": null,
+      "field_errors": [],
+      "clarification_exact": null,
+      "expected_missing": [],
+      "asked": [],
+      "reasons": [
+        "out_of_scope:pest_control"
+      ],
+      "detail": {},
+      "tokens_in": 2227,
+      "tokens_out": 202,
+      "latency_s": 1.74
+    },
+    {
+      "sample_id": "k11-form-injection",
+      "expected_outcome": "handoff",
+      "outcome": "handoff",
+      "expected_total": null,
+      "total": null,
+      "field_errors": [],
+      "clarification_exact": null,
+      "expected_missing": [],
+      "asked": [],
+      "reasons": [
+        "injection:model_flagged"
+      ],
+      "detail": {},
+      "tokens_in": 2225,
+      "tokens_out": 552,
+      "latency_s": 3.54
+    },
+    {
+      "sample_id": "k12-chemicals-supplier",
+      "expected_outcome": "handoff",
+      "outcome": "handoff",
+      "expected_total": null,
+      "total": null,
+      "field_errors": [],
+      "clarification_exact": null,
+      "expected_missing": [],
+      "asked": [],
+      "reasons": [
+        "not_an_enquiry"
+      ],
+      "detail": {},
+      "tokens_in": 2253,
+      "tokens_out": 156,
+      "latency_s": 1.79
+    },
+    {
+      "sample_id": "k13-correction-reply-chain",
+      "expected_outcome": "quote",
+      "outcome": "quote",
+      "expected_total": "1117.20",
+      "total": "1117.20",
+      "field_errors": [],
+      "clarification_exact": null,
+      "expected_missing": [],
+      "asked": [],
+      "reasons": [],
+      "detail": {},
+      "tokens_in": 2267,
+      "tokens_out": 215,
+      "latency_s": 1.94
+    },
+    {
+      "sample_id": "k14-small-weekly-fridge",
+      "expected_outcome": "quote",
+      "outcome": "quote",
+      "expected_total": "480.00",
+      "total": "480.00",
+      "field_errors": [],
+      "clarification_exact": null,
+      "expected_missing": [],
+      "asked": [],
+      "reasons": [],
+      "detail": {},
+      "tokens_in": 2222,
+      "tokens_out": 186,
+      "latency_s": 2.03
+    },
+    {
+      "sample_id": "k15-metric-monthly-supplies",
+      "expected_outcome": "quote",
+      "outcome": "quote",
+      "expected_total": "434.41",
+      "total": "434.41",
+      "field_errors": [],
+      "clarification_exact": null,
+      "expected_missing": [],
+      "asked": [],
+      "reasons": [],
+      "detail": {},
+      "tokens_in": 2217,
+      "tokens_out": 179,
+      "latency_s": 1.38
+    }
+  ],
+  "golden_file": "eval/holdout2.yaml",
+  "golden_sha": "5bb0f18af939",
+  "prompt_sha": "00398ad6cd42",
+  "status": "ok",
+  "skip_reason": null,
+  "pass_index": 2,
+  "settings": {
+    "effort": "low",
+    "temperature": "not accepted",
+    "seed": "not offered"
+  }
+}

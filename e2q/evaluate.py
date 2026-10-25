@@ -103,6 +103,8 @@ class EvalResult:
     prompt_sha: str | None = None
     status: str = "ok"  # ok | skipped
     skip_reason: str | None = None
+    pass_index: int = 1
+    settings: dict = field(default_factory=dict)
 
     def field_accuracy(self) -> dict[str, tuple[int, int]]:
         n = len(self.cases)
@@ -129,6 +131,13 @@ class EvalResult:
         return cls(**data)
 
 
+def provider_settings(extractor) -> dict:
+    """Sampling settings of the provider behind an LLM row (guard rows wrap one)."""
+    inner = getattr(extractor, "llm", extractor)
+    provider = getattr(inner, "provider", None)
+    return dict(getattr(provider, "settings", None) or {})
+
+
 def run_eval(
     business: Business,
     extractor: Extractor | None = None,
@@ -136,6 +145,7 @@ def run_eval(
     samples_dir: Path = SAMPLES,
     row: str | None = None,
     progress=None,
+    pass_index: int = 1,
 ) -> EvalResult:
     extractor = extractor or RuleExtractor(business)
     golden = yaml.safe_load(golden_path.read_text(encoding="utf-8"))
@@ -192,6 +202,8 @@ def run_eval(
             if hasattr(extractor, "system_prompt")
             else None
         ),
+        pass_index=pass_index,
+        settings=provider_settings(extractor),
     )  # fmt: skip
 
 
@@ -207,13 +219,16 @@ def skipped(row: str, golden_path: Path, reason: str) -> EvalResult:
     )
 
 
-def run_path(row: str, golden_path: Path, runs_dir: Path | None = None) -> Path:
-    slug = row.replace(":", "_").replace("/", "_")
-    return (runs_dir or RUNS) / f"{slug}__{golden_path.stem}.json"
+def run_path(
+    row: str, golden_path: Path, runs_dir: Path | None = None, pass_index: int = 1
+) -> Path:
+    slug = row.replace(":", "_").replace("/", "_").replace("@", "_").replace("+", "_")
+    tag = f"__p{pass_index}" if pass_index > 1 or "@" in row else ""
+    return (runs_dir or RUNS) / f"{slug}{tag}__{golden_path.stem}.json"
 
 
 def save_run(result: EvalResult, golden_path: Path, runs_dir: Path | None = None) -> Path:
-    path = run_path(result.extractor, golden_path, runs_dir)
+    path = run_path(result.extractor, golden_path, runs_dir, result.pass_index)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(result.to_json(), encoding="utf-8")
     return path
@@ -236,24 +251,31 @@ def pct(ok: int, n: int) -> str:
     return f"{ok}/{n} ({100 * ok / n:.0f}%)" if n else "n/a"
 
 
-def row_label(result: EvalResult, current_sha: str) -> str:
-    if result.status == "skipped":
-        return f"{result.extractor} (skipped)"
-    if result.golden_sha != current_sha:
-        return f"{result.extractor} (stale)"
-    return result.extractor
+def display(name: str) -> str:
+    """LLM rows saved before prompt versions existed are v1; say so in the report."""
+    if ":" in name and "@" not in name:
+        return f"{name}@v1"
+    return name
 
 
-def summary_rows(result: EvalResult) -> list[str]:
+def group_runs(results: list[EvalResult]) -> dict[str, list[EvalResult]]:
+    groups: dict[str, list[EvalResult]] = {}
+    for r in results:
+        groups.setdefault(r.extractor, []).append(r)
+    order = sorted(groups, key=lambda n: (n != "RuleExtractor", display(n)))
+    return {n: sorted(groups[n], key=lambda r: r.pass_index) for n in order}
+
+
+def measures(result: EvalResult) -> list[tuple[int, int]]:
     acc = result.field_accuracy()
     ok_fields = sum(ok for ok, _ in acc.values())
     all_fields = sum(n for _, n in acc.values())
     return [
-        *(pct(ok, n) for ok, n in acc.values()),
-        pct(ok_fields, all_fields),
-        pct(*result.outcome_accuracy()),
-        pct(*result.price_exactness()),
-        pct(*result.clarification_exactness()),
+        *acc.values(),
+        (ok_fields, all_fields),
+        result.outcome_accuracy(),
+        result.price_exactness(),
+        result.clarification_exactness(),
     ]
 
 
@@ -266,38 +288,74 @@ MEASURES = [
 ]
 
 
+def cell(values: list[tuple[int, int]]) -> str:
+    if len(values) == 1:
+        return pct(*values[0])
+    oks = [ok for ok, _ in values]
+    n = values[0][1]
+    mean = sum(oks) / len(oks)
+    return f"{mean:.1f}/{n} ({min(oks)}-{max(oks)})" if n else "n/a"
+
+
+def label(name: str, runs: list[EvalResult], current: str) -> str:
+    ok = [r for r in runs if r.status == "ok"]
+    if not ok:
+        return f"{display(name)} (skipped)"
+    text = display(name) + (f" x{len(ok)}" if len(ok) > 1 else "")
+    if all(r.golden_sha != current for r in ok):
+        text += " (stale)"
+    return text
+
+
 def render_set(title: str, golden_path: Path, results: list[EvalResult]) -> list[str]:
     current = sha(golden_path)
     n = len(yaml.safe_load(golden_path.read_text(encoding="utf-8")))
-    out = [
-        f"## {title}",
-        "",
-        f"Golden file: `{results[0].golden_file}`, {n} synthetic enquiries.",
-        "",
+    groups = group_runs(results)
+    rel = (
+        golden_path.relative_to(ROOT).as_posix()
+        if golden_path.is_relative_to(ROOT)
+        else golden_path.name
+    )
+    out = [f"## {title}", "", f"Golden file: `{rel}`, {n} synthetic inquiries.", ""]
+    out += [
+        "| Measure | " + " | ".join(label(k, v, current) for k, v in groups.items()) + " |",
+        "|---|" + "---|" * len(groups),
     ]
-    head = "| Measure | " + " | ".join(row_label(r, current) for r in results) + " |"
-    out += [head, "|---|" + "---|" * len(results)]
-    columns = [
-        summary_rows(r) if r.status == "ok" and r.golden_sha == current else ["-"] * len(MEASURES)
-        for r in results
-    ]
+    columns = []
+    for runs in groups.values():
+        ok = [r for r in runs if r.status == "ok"]
+        columns.append(
+            [cell(vals) for vals in zip(*(measures(r) for r in ok), strict=True)]
+            if ok
+            else ["-"] * len(MEASURES)
+        )
     for i, measure in enumerate(MEASURES):
         out.append(f"| {measure} | " + " | ".join(col[i] for col in columns) + " |")
-    out.append("")
-    for r in results:
-        if r.status == "skipped":
-            out.append(f"- `{r.extractor}` skipped: {r.skip_reason}")
-        elif r.golden_sha != current:
-            out.append(
-                f"- `{r.extractor}` is stale: its run ({r.run_date}) used an older `{r.golden_file}`; re-run it."
-            )
-        else:
-            out.append(
-                f"- `{r.extractor}` run {r.run_date}"
-                + (f", prompt {r.prompt_sha}" if r.prompt_sha else "")
-                + "."
-            )
-            for c in r.cases:
+    out += [
+        "",
+        "Rows with several passes show the mean, then the lowest and highest pass in brackets.",
+        "",
+    ]
+
+    for name, runs in groups.items():
+        ok = [r for r in runs if r.status == "ok"]
+        if not ok:
+            out.append(f"- `{display(name)}` skipped: {runs[0].skip_reason}")
+            continue
+        first = ok[0]
+        bits = [f"run {first.run_date}"]
+        if first.prompt_sha:
+            bits.append(f"prompt {first.prompt_sha}")
+        if len(ok) > 1:
+            bits.append(f"{len(ok)} passes")
+        if first.settings:
+            bits.append(", ".join(f"{k} {v}" for k, v in first.settings.items()))
+        line = f"- `{display(name)}`: " + "; ".join(bits) + "."
+        if first.golden_sha != current:
+            line += f" Stale: scored on an earlier `{first.golden_file}` ({len(first.cases)} cases); kept for comparison."
+        out.append(line)
+        if first.golden_sha == current:
+            for c in first.cases:
                 if (
                     c.outcome == "clarification" == c.expected_outcome
                     and c.clarification_exact is False
@@ -307,59 +365,113 @@ def render_set(title: str, golden_path: Path, results: list[EvalResult]) -> list
                         f"{c.asked} instead of {c.expected_missing}."
                     )
     out.append("")
-    for r in results:
-        if r.status != "ok" or r.golden_sha != current:
-            continue
+
+    multi = {k: [r for r in v if r.status == "ok"] for k, v in groups.items()}
+    multi = {k: v for k, v in multi.items() if len(v) > 1 and v[0].golden_sha == current}
+    if multi:
         out += [
-            f"### Per enquiry: `{r.extractor}`",
+            "### Outcome spread across passes",
             "",
-            "| Sample | Expected | Got | Expected total | Got total | Field mismatches |",
-            "|---|---|---|---|---|---|",
+            "| Row | Passes | Best | Worst | Mean |",
+            "|---|---|---|---|---|",
         ]
-        for c in r.cases:
-            mismatch = ", ".join(
-                f"`{f}` want {c.detail[f]['want']!r} got {c.detail[f]['got']!r}"
-                for f in c.field_errors
-            )
+        for name, runs in multi.items():
+            oks = [r.outcome_accuracy()[0] for r in runs]
+            total = runs[0].outcome_accuracy()[1]
             out.append(
-                f"| {c.sample_id} | {c.expected_outcome} | {c.outcome} | {c.expected_total or '-'} "
-                f"| {c.total or '-'} | {mismatch or '-'} |"
+                f"| {display(name)} | {len(runs)} | {max(oks)}/{total} | {min(oks)}/{total} "
+                f"| {sum(oks) / len(oks):.1f}/{total} |"
             )
         out.append("")
-    return out  # fmt: skip
+
+    live = {
+        k: [r for r in v if r.status == "ok" and r.golden_sha == current] for k, v in groups.items()
+    }
+    live = {k: v for k, v in live.items() if v}
+    golden = yaml.safe_load(golden_path.read_text(encoding="utf-8"))
+    out += [
+        "### Per inquiry",
+        "",
+        "| Sample | Expected | " + " | ".join(display(k) for k in live) + " |",
+        "|---|---|" + "---|" * len(live),
+    ]
+    for sample_id, g in golden.items():
+        cells = []
+        for runs in live.values():
+            cases = [next(c for c in r.cases if c.sample_id == sample_id) for r in runs]
+            bad = [c for c in cases if c.failed]
+            if len(cases) == 1:
+                cells.append("ok" if not bad else f"MISS: {bad[0].outcome}")
+            elif not bad:
+                cells.append(f"ok {len(cases)}/{len(cases)}")
+            else:
+                wrong = sorted({c.outcome for c in bad})
+                cells.append(f"MISS {len(bad)}/{len(cases)} ({', '.join(wrong)})")
+        out.append(f"| {sample_id} | {g['outcome']} | " + " | ".join(cells) + " |")
+    out.append("")
+
+    failures = []
+    for name, runs in live.items():
+        for r in runs:
+            tag = f" pass {r.pass_index}" if len(runs) > 1 else ""
+            for c in r.cases:
+                if not c.failed:
+                    continue
+                want = c.expected_outcome + (f" {c.expected_total}" if c.expected_total else "")
+                got = c.outcome + (f" {c.total}" if c.total else "")
+                if c.outcome == "clarification":
+                    got += f" asking {c.asked}"
+                fields = ", ".join(
+                    f"`{f}` want {c.detail[f]['want']!r} got {c.detail[f]['got']!r}"
+                    for f in c.field_errors
+                )
+                reasons = f" reasons {c.reasons}" if c.reasons else ""
+                failures.append(
+                    f"- `{display(name)}`{tag}: {c.sample_id}: want {want}, got {got};{reasons}"
+                    + (f" fields: {fields}" if fields else "")
+                )
+    out += ["### Failures", ""] + (failures or ["- none"]) + [""]
+    return out
 
 
 def render_watch(sets: list[tuple[str, Path, list[EvalResult]]]) -> list[str]:
     """One table across every held-out set and every row (a row that did not run says so)."""
-    rows: list[str] = []
     names: list[str] = []
     for _title, _golden, results in sets:
-        for r in results:
-            if r.extractor not in names:
-                names.append(r.extractor)
+        for name in group_runs(results):
+            if name not in names:
+                names.append(name)
+    rows: list[str] = []
     for title, golden_path, results in sets:
         ids = CASES_TO_WATCH.get(golden_path.stem, ())
         if not ids:
             continue
         current = sha(golden_path)
         golden = yaml.safe_load(golden_path.read_text(encoding="utf-8"))
-        by_name = {r.extractor: r for r in results}
+        groups = group_runs(results)
         # An id may be a full sample id or its prefix ("k06" for "k06-large-daily").
         resolved = [g for cid in ids for g in golden if g == cid or g.startswith(f"{cid}-")]
         for case_id in resolved:
             cells = []
             for name in names:
-                r = by_name.get(name)
-                if r is None or r.status != "ok":
+                runs = [r for r in groups.get(name, []) if r.status == "ok"]
+                if not runs:
                     cells.append("not run")
                     continue
-                if r.golden_sha != current:
+                if runs[0].golden_sha != current:
                     cells.append("stale")
                     continue
-                c = next(c for c in r.cases if c.sample_id == case_id)
-                extra = f", asked {c.asked}" if c.outcome == "clarification" else ""
-                extra += f", total {c.total}" if c.total else ""
-                cells.append(f"{c.outcome}{extra} ({'MISS' if c.failed else 'ok'})")
+                cases = [next(c for c in r.cases if c.sample_id == case_id) for r in runs]
+                outcomes: dict[str, int] = {}
+                for c in cases:
+                    key = c.outcome + (f" {c.total}" if c.total else "")
+                    outcomes[key] = outcomes.get(key, 0) + 1
+                bad = sum(c.failed for c in cases)
+                text = ", ".join(f"{k} x{v}" if len(cases) > 1 else k for k, v in outcomes.items())
+                mark = (
+                    "ok" if not bad else (f"MISS {bad}/{len(cases)}" if len(cases) > 1 else "MISS")
+                )
+                cells.append(f"{text} ({mark})")
             rows.append(
                 f"| {title} | {case_id} | {golden[case_id]['outcome']} | "
                 + " | ".join(cells)
@@ -372,62 +484,77 @@ def render_watch(sets: list[tuple[str, Path, list[EvalResult]]]) -> list[str]:
         "",
         "Held-out cases a client is most likely to ask about, with each row's outcome.",
         "",
-        "| Set | Case | Expected | " + " | ".join(names) + " |",
+        "| Set | Case | Expected | " + " | ".join(display(n) for n in names) + " |",
         "|---|---|---|" + "---|" * len(names),
         *rows,
         "",
     ]
 
 
-def render_cost(all_results: list[EvalResult], prices: dict) -> list[str]:
-    rows = {}
-    for r in all_results:
-        if r.status == "ok" and r.prompt_sha:
-            rows.setdefault(r.extractor, []).extend(c for c in r.cases if c.tokens_in is not None)
-        elif r.status == "skipped":
-            rows.setdefault(r.extractor, [])
-    if not rows:
+def render_cost(sets: list[tuple[str, Path, list[EvalResult]]], prices: dict) -> list[str]:
+    groups: dict[str, list[CaseResult]] = {}
+    passes: dict[str, set[int]] = {}
+    settings: dict[str, dict] = {}
+    for _title, golden_path, results in sets:
+        current = sha(golden_path)
+        for r in results:
+            if r.status != "ok" or not r.prompt_sha or r.extractor.endswith("+guard"):
+                continue
+            if r.golden_sha != current:
+                continue
+            groups.setdefault(r.extractor, []).extend(c for c in r.cases if c.tokens_in is not None)
+            passes.setdefault(r.extractor, set()).add(r.pass_index)
+            settings[r.extractor] = r.settings
+    if not groups:
         return []
     out = [
         "## Cost and latency (LLM rows)",
         "",
-        "One extraction call per enquiry; tokens and latency are recorded per call in `eval/runs/`.",
+        "One extraction call per inquiry, recorded per call in `eval/runs/`. Guard rows score the",
+        "same calls as their unguarded row, so they add no calls and are not listed. Stale rows",
+        "are left out.",
         "",
-        "| Row | Calls | Mean tokens in | Mean tokens out | Mean latency (s) | Max latency (s) | Cost per enquiry |",
-        "|---|---|---|---|---|---|---|",
+        "| Row | Passes | Calls | Mean tokens in | Mean tokens out | Mean latency (s) | Max latency (s) | Cost per inquiry | Cost, all calls |",
+        "|---|---|---|---|---|---|---|---|---|",
     ]
     notes = []
-    for name, cases in rows.items():
-        model = name.split(":", 1)[1] if ":" in name else name
+    for name in sorted(groups, key=display):
+        cases = groups[name]
+        model = name.split(":", 1)[1].split("@", 1)[0] if ":" in name else name
         price = prices.get(model, {})
-        if not cases:
-            out.append(f"| {name} | 0 | - | - | - | - | not run |")
+        k = len(cases)
+        if not k:
+            continue
+        tin = sum(c.tokens_in for c in cases) / k
+        tout = sum(c.tokens_out for c in cases) / k
+        lat = [c.latency_s for c in cases]
+        if price.get("local"):
+            per, total = "$0 (local)", "$0"
+        elif "input_per_mtok" in price:
+            pin, pout = float(price["input_per_mtok"]) / 1e6, float(price["output_per_mtok"]) / 1e6
+            per = f"${tin * pin + tout * pout:.6f}"
+            total = f"${sum(c.tokens_in * pin + c.tokens_out * pout for c in cases):.4f}"
         else:
-            k = len(cases)
-            tin = sum(c.tokens_in for c in cases) / k
-            tout = sum(c.tokens_out for c in cases) / k
-            lat = [c.latency_s for c in cases]
-            if price.get("local"):
-                cost = "$0 (local)"
-            elif "input_per_mtok" in price:
-                usd = (
-                    tin * float(price["input_per_mtok"]) / 1e6
-                    + tout * float(price["output_per_mtok"]) / 1e6
-                )
-                cost = f"${usd:.6f}"
-            else:
-                cost = "unverified"
-            out.append(
-                f"| {name} | {k} | {tin:,.0f} | {tout:,.0f} | {sum(lat) / k:.1f} | {max(lat):.1f} | {cost} |"
+            per, total = "unverified", "unverified"
+        out.append(
+            f"| {display(name)} | {len(passes[name])} | {k} | {tin:,.0f} | {tout:,.0f} | {sum(lat) / k:.1f} "
+            f"| {max(lat):.1f} | {per} | {total} |"
+        )
+        if settings.get(name):
+            notes.append(
+                f"- `{display(name)}` settings: "
+                + ", ".join(f"{a} {b}" for a, b in settings[name].items())
+                + "."
             )
+    for model, price in prices.items():
         if price.get("source"):
             notes.append(
-                f"- `{model}`: ${price['input_per_mtok']} / MTok in, ${price['output_per_mtok']} / MTok out "
+                f"- `{model}` price: ${price['input_per_mtok']} / MTok in, ${price['output_per_mtok']} / MTok out "
                 f"({price.get('condition', '')}); source {price['source']}, fetched {price['fetched']}."
             )
         elif price.get("local"):
             notes.append(f"- `{model}`: {price.get('note', 'runs locally')}")
-    return [*out, "", *notes, ""]  # fmt: skip
+    return [*out, "", *notes, ""]
 
 
 def render_report(
@@ -440,24 +567,22 @@ def render_report(
         f"Rendered {run_date} (UTC) by `uv run e2q eval`. Do not edit by hand.",
         "",
         "The original set was written in the same session as `RuleExtractor`, so its score shows",
-        "that the pieces agree with each other. The held-out set was written separately, without",
-        "sight of the extractor or the original samples (provenance in the `eval/holdout.yaml`",
-        "header), and is the better guide to accuracy. `RuleExtractor` is the baseline and is not",
-        "changed while LLM rows are measured.",
+        "that the pieces agree with each other. The held-out sets were written separately, without",
+        "sight of the extractor or the original samples (provenance in each held-out YAML header),",
+        "and are the better guide to accuracy. `RuleExtractor` is the baseline and is not changed",
+        "while LLM rows are measured.",
         "",
-        "LLM rows (`provider:model`) use `LLMExtractor`. Its prompt carries the extraction schema and",
-        "the service, frequency, add-on and out-of-scope categories with their labels from",
+        "LLM rows are named `provider:model@prompt`; `+guard` rows also run `RuleExtractor` and hand",
+        "off when the two disagree on a field a quote needs. The prompt carries the extraction schema",
+        "and the service, frequency, add-on and out-of-scope categories with their labels from",
         "`business/pricing.yaml`; it carries no keyword maps from `business/business.yaml` and no",
-        "patterns from `e2q/extract/rules.py`. LLM runs are not deterministic: each saved run is one",
-        "pass.",
+        "patterns from `e2q/extract/rules.py`. Each saved run is one pass.",
         "",
     ]
-    all_results = []
     for title, golden_path, results in sets:
         out += render_set(title, golden_path, results)
-        all_results += results
     out += render_watch(sets)
-    out += render_cost(all_results, prices or {})
+    out += render_cost(sets, prices or {})
     return "\n".join(out).rstrip("\n") + "\n"
 
 

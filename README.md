@@ -72,6 +72,7 @@ Other commands: `e2q edit <id> --body-file reply.txt [--subject "..."]` saves a 
 ```powershell
 uv run e2q eval --llm ollama:gpt-oss:20b          # local model; it must already be pulled
 uv run e2q eval --llm anthropic:claude-haiku-5-5  # needs ANTHROPIC_API_KEY and: uv sync --extra llm
+uv run e2q eval --llm ollama:gpt-oss:20b --prompt v2 --passes 3 --guard
 ```
 
 ## Model providers
@@ -79,6 +80,8 @@ uv run e2q eval --llm anthropic:claude-haiku-5-5  # needs ANTHROPIC_API_KEY and:
 `LLMExtractor` sends one call per inquiry through `e2q/providers.py`: Ollama at `127.0.0.1` (never pulls a model), or Anthropic when `ANTHROPIC_API_KEY` is set and a model id is given. Its prompt holds the extraction schema and the service, frequency, add-on and out-of-scope categories from `business/pricing.yaml`; the model never sees a price and never sets one. A reply that does not fit the schema sends the inquiry to a person.
 
 `uv run e2q ingest --llm ollama:gpt-oss:20b "inbox/samples/*.json"` uses the model for extraction and for a short cover note at the top of a quote. A cover note that states any number not already in the quote is dropped and the template's opening line is used instead.
+
+Prompts are versioned (`--prompt v1` or `v2`), and every saved run records the prompt's hash, so results from different prompts are never mixed. With `--guard`, `RuleExtractor` reads each inquiry too, and the inquiry goes to a person when the two disagree on any field a quote needs. Ollama calls pin sampling (temperature 0, seed 42); the Anthropic API takes no temperature or seed for this model, so its rows vary from pass to pass.
 
 A real sender (`--sender resend`) exists behind `RESEND_API_KEY` and is never exercised by the tests.
 

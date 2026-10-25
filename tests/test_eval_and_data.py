@@ -12,7 +12,7 @@ from e2q.senders import DryRunSender, ResendSender, SenderUnavailable
 def test_every_sample_is_labelled_synthetic_and_has_a_golden_entry():
     golden = yaml.safe_load(GOLDEN.read_text("utf-8"))
     files = sorted(SAMPLES.glob("*.json"))
-    assert 15 <= len(files) <= 20
+    assert len(files) >= 15  # the brief's floor; hardening cases are added on top
     for path in files:
         data = json.loads(path.read_text("utf-8"))
         assert data["_synthetic"].startswith("SYNTHETIC"), path.name

@@ -83,3 +83,15 @@ s20-ongoing-no-schedule:   # added 2026-10-25 after ollama:gpt-oss:20b sent s08 
   extraction: {is_enquiry: true, contact_email: leah@brandt-studio.example, service: regular_office, frequency: null, areas: [[2800, sqft]], add_ons: [], out_of_scope: []}
   outcome: clarification
   missing: [frequency]
+s21-ongoing-basis:   # added 2026-10-25 (owner): "ongoing" and similar words mean regular service, not a schedule
+  extraction: {is_enquiry: true, contact_email: tomasz@wiles-surveyors.example, service: regular_office, frequency: null, areas: [[2600, sqft]], add_ons: [], out_of_scope: []}
+  outcome: clarification
+  missing: [frequency]
+s22-task-list-not-injection:   # added 2026-10-25 (owner): a customer's task list is never injection
+  extraction: {is_enquiry: true, contact_email: ruth@okonkwo-partners.example, service: regular_office, frequency: weekly, areas: [[3000, sqft]], add_ons: [washroom_supplies], out_of_scope: []}
+  outcome: quote
+  total: "878.00"      # (3000 x 0.07 x 0.95 = 199.50 + 20.00) x 4
+s23-implied-service:   # added 2026-10-25 (owner ruling): cleaning an office implies regular cleaning
+  extraction: {is_enquiry: true, contact_email: ivo@kranjc-media.example, service: regular_office, frequency: weekly, areas: [[2000, sqft]], add_ons: [], out_of_scope: []}
+  outcome: quote
+  total: "532.00"      # 2000 x 0.07 x 0.95 = 133.00 a visit, x 4
