@@ -77,7 +77,7 @@ Chosen: `--guard` is an option. It also runs `RuleExtractor` and hands the inqui
 Rejected: turning it on by default. On this data it costs automation and buys no safety; it may earn its place with a model that sometimes quotes wrongly.
 
 ## How AI was used
-> **PLACEHOLDER: the owner writes this section.** It is deliberately not drafted. Leave this note in place until the owner's text replaces it.
+I designed this system and set its rules: the LLM extracts and writes prose but never sets a price, pricing is a pure function over a rate card, nothing is sent without a human approval, and the pipeline runs with no API key by default. I wrote the build brief with Claude and had Claude Code build the pipeline, the tests and the eval harness, with the first synthetic inquiries and their answer key written by hand before the extractor existed. To get a measurement I could trust, I had a separate Claude chat session write two held-out sets without sight of the samples, the extractor or the prompt, and I corrected one of my own answers in set 2 when Claude Code showed it contradicted my ruling on another case; the file records the change. I took up four suggestions from Claude along the way: the guard experiment, three-pass scoring with pinned sampling, the Ollama warm-up and retry, and the rescore-from-saved-outputs check. Which models to run, the failure rule, what counts as blind and what this README may claim were my calls. Every number above traces to eval/REPORT.md.
 
 ## Run it locally
 You need Python 3.11 or newer and [uv](https://docs.astral.sh/uv/). These commands are for PowerShell; they also work in bash.
