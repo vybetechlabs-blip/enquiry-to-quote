@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC sample written for this demo. All people, companies and addresses are invented. Added 2026-10-25 as a hardening case (owner instruction after the prompt v2 report).",
+  "id": "s24-casual-carpets",
+  "source": "email",
+  "received_at": "2026-10-25T14:00:00Z",
+  "from": "Dev Malhotra <dev@malhotra-studio.example>",
+  "subject": "carpets",
+  "body": "hiya,\n\nthe carpets in our office are in a state after the summer. it's about 1,100 sq ft. any chance you could sort them out?\n\ncheers\nDev"
+}

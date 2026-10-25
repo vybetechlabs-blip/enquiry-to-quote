@@ -8,6 +8,7 @@ from decimal import Decimal
 from pathlib import Path
 
 import typer
+import yaml
 
 from e2q.config import load_business
 from e2q.draft import build_draft
@@ -311,6 +312,66 @@ def eval_cmd(
     ]
     write_report(sections, out)
     typer.echo(out.read_text(encoding="utf-8"))
+
+
+@app.command()
+def rescore(
+    fill: list[str] = typer.Option(
+        None,
+        "--fill",
+        help="Row (provider:model@prompt) allowed new calls for new cases and infrastructure "
+        "failures. Repeatable. Rows not named here get no calls.",
+    ),
+) -> None:
+    """Re-score saved LLM runs against the current golden files and pricing code."""
+    from e2q.evaluate import default_sets, save_run, saved_runs
+    from e2q.rescore import rescore_run
+
+    business = load_business(state.business_dir)
+    providers = {}
+    for row in fill or []:
+        base, _, version = row.partition("@")
+        name, model = split_row(base)
+        try:
+            providers[row] = (make_provider(name, model=model), version or "v1")
+        except ProviderUnavailable as exc:
+            typer.echo(f"--fill {row}: unavailable ({exc}); its runs get no new calls", err=True)
+    for title, golden, samples in default_sets():
+        runs = [r for r in saved_runs(golden) if r.status == "ok"]
+        guards = {(r.extractor, r.pass_index): r for r in runs if r.extractor.endswith("+guard")}
+        for plain in (r for r in runs if not r.extractor.endswith("+guard")):
+            provider, version = providers.get(plain.extractor, (None, None))
+            golden_ids = set(yaml.safe_load(golden.read_text(encoding="utf-8")))
+            missing = golden_ids - {c.sample_id for c in plain.cases}
+            if missing and provider is None:
+                typer.echo(
+                    f"skip  {plain.extractor} p{plain.pass_index} on {title}: "
+                    f"{len(missing)} new case(s) and no --fill; left as it was"
+                )
+                continue
+            guard = guards.get((f"{plain.extractor}+guard", plain.pass_index))
+            new_plain, new_guard, calls = rescore_run(
+                business,
+                plain,
+                guard,
+                golden,
+                samples,
+                provider,
+                version or ("v2" if "@v2" in plain.extractor else "v1"),
+            )
+            save_run(new_plain, golden)
+            if new_guard is not None:
+                save_run(new_guard, golden)
+            retries = sum(
+                c.retries or 0
+                for c in new_plain.cases
+                if c.sample_id in {x.split(" ")[0] for x in calls}
+            )
+            typer.echo(
+                f"done  {plain.extractor} p{plain.pass_index} on {title}: "
+                f"{len(calls)} new call(s), {retries} retried"
+                + (f" [{'; '.join(calls)}]" if calls else "")
+            )
 
 
 def main() -> None:

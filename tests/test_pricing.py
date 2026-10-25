@@ -195,3 +195,18 @@ def test_pricing_is_pure(card):
     first, second = price(e, card), price(e, card)
     assert first == second
     assert e.model_dump() == before
+
+
+def test_site_outside_band_hands_off_before_asking_for_missing_fields(card):
+    # 100 sq ft with no service or frequency: a person handles it; no clarification is sent.
+    e = make_enquiry(
+        service=None, frequency=None, sites=[Site(label="Site 1", area=100, area_unit="sqft")]
+    )
+    result = price(e, card)
+    assert isinstance(result, NeedsHuman)
+    assert result.reasons == ["sanity:area:Site 1:100.0"]
+
+
+def test_known_area_inside_band_still_asks_for_missing_fields(card):
+    e = make_enquiry(frequency=None, sites=[Site(label="Site 1", area=2000, area_unit="sqft")])
+    assert price(e, card).reasons == ["missing:frequency"]

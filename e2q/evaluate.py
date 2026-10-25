@@ -82,6 +82,9 @@ class CaseResult:
     tokens_in: int | None = None
     tokens_out: int | None = None
     latency_s: float | None = None
+    retries: int | None = None
+    observed: dict | None = None
+    needs_human: list[str] = field(default_factory=list)
 
     @property
     def failed(self) -> bool:
@@ -105,6 +108,7 @@ class EvalResult:
     skip_reason: str | None = None
     pass_index: int = 1
     settings: dict = field(default_factory=dict)
+    notes: list[str] = field(default_factory=list)
 
     def field_accuracy(self) -> dict[str, tuple[int, int]]:
         n = len(self.cases)
@@ -138,6 +142,43 @@ def provider_settings(extractor) -> dict:
     return dict(getattr(provider, "settings", None) or {})
 
 
+def score_case(
+    business: Business, enquiry: Enquiry, call, sample_id: str, expected: dict
+) -> CaseResult:
+    """Price and draft one extraction, then score it against its golden entry."""
+    draft = build_draft(enquiry, business)
+    got = observed(enquiry)
+    want = expected["extraction"]
+    errors = [f for f in FIELDS if normalize(f, got[f]) != normalize(f, want.get(f))]
+    total = str(draft.quote.total) if draft.quote else None
+    want_total = str(Decimal(expected["total"])) if expected.get("total") else None
+    asked = (
+        [r.removeprefix("missing:") for r in draft.reasons] if draft.kind == "clarification" else []
+    )
+    clar_exact = None
+    if expected["outcome"] == "clarification":
+        clar_exact = draft.kind == "clarification" and asked == expected.get("missing", [])
+    return CaseResult(
+        sample_id=sample_id,
+        expected_outcome=expected["outcome"],
+        outcome=draft.kind,
+        expected_total=want_total,
+        total=total,
+        field_errors=errors,
+        clarification_exact=clar_exact,
+        expected_missing=expected.get("missing", []),
+        asked=asked,
+        reasons=list(draft.reasons),
+        detail={f: {"want": want.get(f), "got": got[f]} for f in errors},
+        tokens_in=call.tokens_in if call else None,
+        tokens_out=call.tokens_out if call else None,
+        latency_s=round(call.latency_s, 2) if call else None,
+        retries=call.retries if call else None,
+        observed=got,
+        needs_human=list(enquiry.needs_human),
+    )
+
+
 def run_eval(
     business: Business,
     extractor: Extractor | None = None,
@@ -158,36 +199,7 @@ def run_eval(
         before = len(calls) if calls is not None else 0
         enquiry = extractor.extract(raw)
         call = calls[-1] if calls is not None and len(calls) > before else None
-        draft = build_draft(enquiry, business)
-        got = observed(enquiry)
-        want = expected["extraction"]
-        errors = [f for f in FIELDS if normalize(f, got[f]) != normalize(f, want.get(f))]
-        total = str(draft.quote.total) if draft.quote else None
-        want_total = str(Decimal(expected["total"])) if expected.get("total") else None
-        asked = (
-            [r.removeprefix("missing:") for r in draft.reasons]
-            if draft.kind == "clarification"
-            else []
-        )
-        clar_exact = None
-        if expected["outcome"] == "clarification":
-            clar_exact = draft.kind == "clarification" and asked == expected.get("missing", [])
-        case = CaseResult(
-            sample_id=sample_id,
-            expected_outcome=expected["outcome"],
-            outcome=draft.kind,
-            expected_total=want_total,
-            total=total,
-            field_errors=errors,
-            clarification_exact=clar_exact,
-            expected_missing=expected.get("missing", []),
-            asked=asked,
-            reasons=list(draft.reasons),
-            detail={f: {"want": want.get(f), "got": got[f]} for f in errors},
-            tokens_in=call.tokens_in if call else None,
-            tokens_out=call.tokens_out if call else None,
-            latency_s=round(call.latency_s, 2) if call else None,
-        )
+        case = score_case(business, enquiry, call, sample_id, expected)
         cases.append(case)
         if progress:
             progress(case)
@@ -354,6 +366,8 @@ def render_set(title: str, golden_path: Path, results: list[EvalResult]) -> list
         if first.golden_sha != current:
             line += f" Stale: scored on an earlier `{first.golden_file}` ({len(first.cases)} cases); kept for comparison."
         out.append(line)
+        for note in first.notes:
+            out.append(f"  - {note}")
         if first.golden_sha == current:
             for c in first.cases:
                 if (
@@ -514,8 +528,8 @@ def render_cost(sets: list[tuple[str, Path, list[EvalResult]]], prices: dict) ->
         "same calls as their unguarded row, so they add no calls and are not listed. Stale rows",
         "are left out.",
         "",
-        "| Row | Passes | Calls | Mean tokens in | Mean tokens out | Mean latency (s) | Max latency (s) | Cost per inquiry | Cost, all calls |",
-        "|---|---|---|---|---|---|---|---|---|",
+        "| Row | Passes | Calls | Retries | Mean tokens in | Mean tokens out | Mean latency (s) | Max latency (s) | Cost per inquiry | Cost, all calls |",
+        "|---|---|---|---|---|---|---|---|---|---|",
     ]
     notes = []
     for name in sorted(groups, key=display):
@@ -536,8 +550,12 @@ def render_cost(sets: list[tuple[str, Path, list[EvalResult]]], prices: dict) ->
             total = f"${sum(c.tokens_in * pin + c.tokens_out * pout for c in cases):.4f}"
         else:
             per, total = "unverified", "unverified"
+        if name.startswith("ollama:"):
+            retries = str(sum(c.retries or 0 for c in cases))
+        else:
+            retries = "n/a (SDK)"
         out.append(
-            f"| {display(name)} | {len(passes[name])} | {k} | {tin:,.0f} | {tout:,.0f} | {sum(lat) / k:.1f} "
+            f"| {display(name)} | {len(passes[name])} | {k} | {retries} | {tin:,.0f} | {tout:,.0f} | {sum(lat) / k:.1f} "
             f"| {max(lat):.1f} | {per} | {total} |"
         )
         if settings.get(name):

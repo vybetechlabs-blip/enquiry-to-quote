@@ -16,7 +16,23 @@
       "detail": {},
       "tokens_in": 2262,
       "tokens_out": 178,
-      "latency_s": 1.72
+      "latency_s": 1.72,
+      "retries": null,
+      "observed": {
+        "is_enquiry": true,
+        "contact_email": "marisol@vega-architecture.example",
+        "service": "regular_office",
+        "frequency": "weekly",
+        "areas": [
+          [
+            3800.0,
+            "sqft"
+          ]
+        ],
+        "add_ons": [],
+        "out_of_scope": []
+      },
+      "needs_human": []
     },
     {
       "sample_id": "h02-every-other-week-form",
@@ -32,7 +48,23 @@
       "detail": {},
       "tokens_in": 2238,
       "tokens_out": 255,
-      "latency_s": 1.75
+      "latency_s": 1.75,
+      "retries": null,
+      "observed": {
+        "is_enquiry": true,
+        "contact_email": "jonah@petersen-bookkeeping.example",
+        "service": "regular_office",
+        "frequency": "fortnightly",
+        "areas": [
+          [
+            2400.0,
+            "sqft"
+          ]
+        ],
+        "add_ons": [],
+        "out_of_scope": []
+      },
+      "needs_human": []
     },
     {
       "sample_id": "h03-move-in-thorough",
@@ -48,7 +80,23 @@
       "detail": {},
       "tokens_in": 2269,
       "tokens_out": 213,
-      "latency_s": 1.6
+      "latency_s": 1.6,
+      "retries": null,
+      "observed": {
+        "is_enquiry": true,
+        "contact_email": "farah@haddad-ventures.example",
+        "service": "deep_clean",
+        "frequency": "one_off",
+        "areas": [
+          [
+            5000.0,
+            "sqft"
+          ]
+        ],
+        "add_ons": [],
+        "out_of_scope": []
+      },
+      "needs_human": []
     },
     {
       "sample_id": "h04-carpets-shampoo",
@@ -64,7 +112,23 @@
       "detail": {},
       "tokens_in": 2218,
       "tokens_out": 225,
-      "latency_s": 1.79
+      "latency_s": 1.79,
+      "retries": null,
+      "observed": {
+        "is_enquiry": true,
+        "contact_email": "devon.clarke@ridgeline-recruit.example",
+        "service": "carpet_cleaning",
+        "frequency": "one_off",
+        "areas": [
+          [
+            900.0,
+            "sqft"
+          ]
+        ],
+        "add_ons": [],
+        "out_of_scope": []
+      },
+      "needs_human": []
     },
     {
       "sample_id": "h05-metric-fortnightly",
@@ -80,7 +144,23 @@
       "detail": {},
       "tokens_in": 2229,
       "tokens_out": 210,
-      "latency_s": 1.9
+      "latency_s": 1.9,
+      "retries": null,
+      "observed": {
+        "is_enquiry": true,
+        "contact_email": "ingrid@solberg-translation.example",
+        "service": "regular_office",
+        "frequency": "fortnightly",
+        "areas": [
+          [
+            250.0,
+            "sqm"
+          ]
+        ],
+        "add_ons": [],
+        "out_of_scope": []
+      },
+      "needs_human": []
     },
     {
       "sample_id": "h06-form-no-email",
@@ -98,7 +178,23 @@
       "detail": {},
       "tokens_in": 2213,
       "tokens_out": 178,
-      "latency_s": 1.34
+      "latency_s": 1.34,
+      "retries": null,
+      "observed": {
+        "is_enquiry": true,
+        "contact_email": null,
+        "service": "regular_office",
+        "frequency": "weekly",
+        "areas": [
+          [
+            1500.0,
+            "sqft"
+          ]
+        ],
+        "add_ons": [],
+        "out_of_scope": []
+      },
+      "needs_human": []
     },
     {
       "sample_id": "h07-twelve-desks-no-area",
@@ -120,7 +216,18 @@
       "detail": {},
       "tokens_in": 2227,
       "tokens_out": 226,
-      "latency_s": 2.33
+      "latency_s": 2.33,
+      "retries": null,
+      "observed": {
+        "is_enquiry": true,
+        "contact_email": "kwame@mensah-surveying.example",
+        "service": "regular_office",
+        "frequency": "weekly",
+        "areas": [],
+        "add_ons": [],
+        "out_of_scope": []
+      },
+      "needs_human": []
     },
     {
       "sample_id": "h08-two-locations",
@@ -136,7 +243,27 @@
       "detail": {},
       "tokens_in": 2252,
       "tokens_out": 229,
-      "latency_s": 1.44
+      "latency_s": 1.44,
+      "retries": null,
+      "observed": {
+        "is_enquiry": true,
+        "contact_email": "helena.marsh@marsh-distribution.example",
+        "service": "regular_office",
+        "frequency": "weekly",
+        "areas": [
+          [
+            6000.0,
+            "sqft"
+          ],
+          [
+            1200.0,
+            "sqft"
+          ]
+        ],
+        "add_ons": [],
+        "out_of_scope": []
+      },
+      "needs_human": []
     },
     {
       "sample_id": "h09-twice-a-week",
@@ -154,7 +281,25 @@
       "detail": {},
       "tokens_in": 2253,
       "tokens_out": 261,
-      "latency_s": 1.87
+      "latency_s": 1.87,
+      "retries": null,
+      "observed": {
+        "is_enquiry": true,
+        "contact_email": "ravi@anand-dental.example",
+        "service": "regular_office",
+        "frequency": null,
+        "areas": [
+          [
+            2200.0,
+            "sqft"
+          ]
+        ],
+        "add_ons": [],
+        "out_of_scope": []
+      },
+      "needs_human": [
+        "unsupported_frequency:twice a week (Tuesday and Friday nights)"
+      ]
     },
     {
       "sample_id": "h10-ps-injection",
@@ -172,7 +317,25 @@
       "detail": {},
       "tokens_in": 2261,
       "tokens_out": 208,
-      "latency_s": 1.89
+      "latency_s": 1.89,
+      "retries": null,
+      "observed": {
+        "is_enquiry": true,
+        "contact_email": "tobias@lind-consulting.example",
+        "service": "regular_office",
+        "frequency": "weekly",
+        "areas": [
+          [
+            2000.0,
+            "sqft"
+          ]
+        ],
+        "add_ons": [],
+        "out_of_scope": []
+      },
+      "needs_human": [
+        "injection:model_flagged"
+      ]
     },
     {
       "sample_id": "h11-job-applicant",
@@ -197,7 +360,18 @@
       },
       "tokens_in": 2244,
       "tokens_out": 124,
-      "latency_s": 1.12
+      "latency_s": 1.12,
+      "retries": null,
+      "observed": {
+        "is_enquiry": false,
+        "contact_email": null,
+        "service": null,
+        "frequency": null,
+        "areas": [],
+        "add_ons": [],
+        "out_of_scope": []
+      },
+      "needs_human": []
     },
     {
       "sample_id": "h12-glass-facade",
@@ -215,7 +389,25 @@
       "detail": {},
       "tokens_in": 2237,
       "tokens_out": 213,
-      "latency_s": 1.68
+      "latency_s": 1.68,
+      "retries": null,
+      "observed": {
+        "is_enquiry": true,
+        "contact_email": "simon@achebe-media.example",
+        "service": "regular_office",
+        "frequency": "weekly",
+        "areas": [
+          [
+            3000.0,
+            "sqft"
+          ]
+        ],
+        "add_ons": [],
+        "out_of_scope": [
+          "exterior_windows"
+        ]
+      },
+      "needs_human": []
     },
     {
       "sample_id": "h13-area-range",
@@ -237,12 +429,23 @@
       "detail": {},
       "tokens_in": 2235,
       "tokens_out": 242,
-      "latency_s": 1.71
+      "latency_s": 1.71,
+      "retries": null,
+      "observed": {
+        "is_enquiry": true,
+        "contact_email": "beatriz@nunes-logistics.example",
+        "service": "regular_office",
+        "frequency": "daily",
+        "areas": [],
+        "add_ons": [],
+        "out_of_scope": []
+      },
+      "needs_human": []
     },
     {
       "sample_id": "h14-kiosk-tiny",
       "expected_outcome": "handoff",
-      "outcome": "clarification",
+      "outcome": "handoff",
       "expected_total": null,
       "total": null,
       "field_errors": [
@@ -250,11 +453,9 @@
       ],
       "clarification_exact": null,
       "expected_missing": [],
-      "asked": [
-        "service"
-      ],
+      "asked": [],
       "reasons": [
-        "missing:service"
+        "sanity:area:Site 1:100.0"
       ],
       "detail": {
         "service": {
@@ -264,7 +465,23 @@
       },
       "tokens_in": 2221,
       "tokens_out": 257,
-      "latency_s": 2.12
+      "latency_s": 2.12,
+      "retries": null,
+      "observed": {
+        "is_enquiry": true,
+        "contact_email": "yusuf@demir-coffee.example",
+        "service": null,
+        "frequency": "weekly",
+        "areas": [
+          [
+            100.0,
+            "sqft"
+          ]
+        ],
+        "add_ons": [],
+        "out_of_scope": []
+      },
+      "needs_human": []
     },
     {
       "sample_id": "h15-daily-fridge",
@@ -280,7 +497,25 @@
       "detail": {},
       "tokens_in": 2273,
       "tokens_out": 187,
-      "latency_s": 1.39
+      "latency_s": 1.39,
+      "retries": null,
+      "observed": {
+        "is_enquiry": true,
+        "contact_email": "grace@whitfield-law.example",
+        "service": "regular_office",
+        "frequency": "daily",
+        "areas": [
+          [
+            4000.0,
+            "sqft"
+          ]
+        ],
+        "add_ons": [
+          "kitchen_appliances"
+        ],
+        "out_of_scope": []
+      },
+      "needs_human": []
     }
   ],
   "golden_file": "eval/holdout.yaml",
@@ -293,5 +528,8 @@
     "effort": "low",
     "temperature": "not accepted",
     "seed": "not offered"
-  }
+  },
+  "notes": [
+    "2026-10-25: re-scored from saved outputs against eval/holdout.yaml 1716cca67934 (run was scored against 1716cca67934) with the current pricing code; no new calls"
+  ]
 }

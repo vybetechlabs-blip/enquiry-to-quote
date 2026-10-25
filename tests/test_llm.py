@@ -244,3 +244,71 @@ def test_ollama_calls_pin_temperature_and_seed(monkeypatch):
     monkeypatch.setattr(OllamaLLM, "_request", fake_request)
     OllamaLLM("gpt-oss:20b").complete("sys", "hi")
     assert sent["options"] == {"temperature": 0.0, "seed": 42}
+
+
+def _scripted_requests(monkeypatch, outcomes):
+    """Make OllamaLLM._request return or raise each item of `outcomes` in turn."""
+    from e2q.providers import OllamaLLM
+
+    calls = []
+
+    def fake(self, path, payload=None):
+        calls.append(path)
+        item = outcomes.pop(0)
+        if isinstance(item, Exception):
+            raise item
+        return item
+
+    monkeypatch.setattr(OllamaLLM, "_request", fake)
+    return calls
+
+
+OK_BODY = {"message": {"content": "{}"}, "prompt_eval_count": 3, "eval_count": 2}
+
+
+def test_ollama_retries_once_on_a_5xx_and_counts_it(monkeypatch):
+    from e2q.providers import OllamaLLM, TransientProviderError
+
+    calls = _scripted_requests(monkeypatch, [TransientProviderError("500"), OK_BODY])
+    provider = OllamaLLM("gpt-oss:20b")
+    result = provider.complete("sys", "hi")
+    assert result.retries == 1 and provider.retries == 1 and len(calls) == 2
+
+
+def test_ollama_gives_up_after_one_retry(monkeypatch):
+    from e2q.providers import OllamaLLM, TransientProviderError
+
+    _scripted_requests(monkeypatch, [TransientProviderError("500"), TransientProviderError("500")])
+    with pytest.raises(TransientProviderError):
+        OllamaLLM("gpt-oss:20b").complete("sys", "hi")
+
+
+def test_ollama_does_not_retry_other_failures(monkeypatch):
+    from e2q.providers import OllamaLLM, ProviderUnavailable
+
+    calls = _scripted_requests(monkeypatch, [ProviderUnavailable("Ollama answered 400")])
+    with pytest.raises(ProviderUnavailable):
+        OllamaLLM("gpt-oss:20b").complete("sys", "hi")
+    assert len(calls) == 1
+
+
+def test_a_reply_that_fails_the_schema_is_never_retried(monkeypatch, business):
+    from e2q.providers import OllamaLLM
+
+    bad = {"message": {"content": "not json"}, "prompt_eval_count": 1, "eval_count": 1}
+    calls = _scripted_requests(monkeypatch, [bad])
+    enq = LLMExtractor(business, OllamaLLM("gpt-oss:20b")).extract(
+        load_sample("s01-complete-email")
+    )
+    assert enq.needs_human == ["extraction_failed:invalid_reply"]
+    assert len(calls) == 1
+
+
+def test_warm_up_is_not_scored_and_a_failure_is_only_noted(monkeypatch):
+    from e2q.providers import OllamaLLM, TransientProviderError
+
+    _scripted_requests(monkeypatch, [TransientProviderError("500"), TransientProviderError("500")])
+    provider = OllamaLLM("gpt-oss:20b")
+    provider.warm_up()
+    assert provider.settings["warm_up"].startswith("failed")
+    assert provider.retries == 0  # warm-up retries are not counted against scored calls

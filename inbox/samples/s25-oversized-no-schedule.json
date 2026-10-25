@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC sample written for this demo. All people, companies and addresses are invented. Added 2026-10-25 as a hardening case (owner instruction after the prompt v2 report).",
+  "id": "s25-oversized-no-schedule",
+  "source": "email",
+  "received_at": "2026-10-25T14:00:00Z",
+  "from": "Hana Sato <hana.sato@sato-distribution.example>",
+  "subject": "Cleaning for our distribution center",
+  "body": "Hello,\n\nWe'd like regular cleaning for our 120,000 sq ft distribution center. We're not sure yet how often. Could you send a price?\n\nHana Sato"
+}

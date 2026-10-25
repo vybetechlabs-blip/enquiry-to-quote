@@ -81,7 +81,26 @@ uv run e2q eval --llm ollama:gpt-oss:20b --prompt v2 --passes 3 --guard
 
 `uv run e2q ingest --llm ollama:gpt-oss:20b "inbox/samples/*.json"` uses the model for extraction and for a short cover note at the top of a quote. A cover note that states any number not already in the quote is dropped and the template's opening line is used instead.
 
-Prompts are versioned (`--prompt v1` or `v2`), and every saved run records the prompt's hash, so results from different prompts are never mixed. With `--guard`, `RuleExtractor` reads each inquiry too, and the inquiry goes to a person when the two disagree on any field a quote needs. Ollama calls pin sampling (temperature 0, seed 42); the Anthropic API takes no temperature or seed for this model, so its rows vary from pass to pass.
+Prompts are versioned (`--prompt v1` or `v2`), and every saved run records the prompt's hash, so results from different prompts are never mixed. Ollama runs start with one warm-up call that is not scored, and retry a call once on a server error or a dropped connection. A reply that fails parsing or the schema is never retried; the inquiry goes to a person.
+
+### Repeatability
+
+- `gpt-oss:20b` runs with sampling pinned (temperature 0, seed 42) and still varies between passes: in the measured runs, s10 (original set) and k02 (held-out set 2) changed outcome from one pass to another. My reading is non-determinism in the GPU runtime; I have not verified the cause.
+- `claude-haiku-5-5` takes no temperature or seed through the Messages API, so effort (`low`) is its only setting and its passes can differ.
+
+### The guard (`--guard`, off by default)
+
+With `--guard`, `RuleExtractor` reads each inquiry too, and the inquiry goes to a person when the two disagree on any field a quote needs. Measured with prompt v2 over three passes (`eval/REPORT.md`), scored on the same model outputs with the guard off and on:
+
+| Row | Original set | Held-out set 1 | Held-out set 2 |
+|---|---|---|---|
+| `claude-haiku-5-5`, guard off / on | 25.0 / 24.0 of 25 | 15.0 / 10.0 of 15 | 15.0 / 11.0 of 15 |
+| `gpt-oss:20b`, guard off / on | 24.7 / 23.7 of 25 | 14.0 / 10.0 of 15 | 14.7 / 10.0 of 15 |
+
+- **What it cost:** every extra handoff came from `RuleExtractor` misreading an inquiry that the model had read correctly.
+- **What it caught:** nothing. Neither model produced a wrong quote in any pass.
+
+It stays an optional flag until a model is measured that sometimes quotes wrongly.
 
 A real sender (`--sender resend`) exists behind `RESEND_API_KEY` and is never exercised by the tests.
 

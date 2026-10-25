@@ -62,6 +62,18 @@ def price(enquiry: Enquiry, card: RateCard) -> Quote | NeedsHuman:
     if reasons:
         return NeedsHuman(enquiry_id=eid, reasons=reasons)
 
+    # Sanity band on every site area already known, before asking for anything missing: a site
+    # outside the band goes to a person even when other fields are still missing.
+    band = card.sanity_band
+    for site in enquiry.sites:
+        if site.area is None:
+            continue
+        area = convert_area(site.area, site.area_unit or card.area_unit, card.area_unit)
+        if not band.min_area_per_site <= float(area) <= band.max_area_per_site:
+            reasons.append(f"sanity:area:{site.label}:{area}")
+    if reasons:
+        return NeedsHuman(enquiry_id=eid, reasons=reasons)
+
     missing = missing_reasons(enquiry)
     if missing:
         return NeedsHuman(enquiry_id=eid, reasons=missing)

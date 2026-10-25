@@ -13,6 +13,7 @@ from __future__ import annotations
 import json
 import os
 import time
+import urllib.error
 import urllib.request
 from collections.abc import Iterable
 from dataclasses import dataclass
@@ -26,6 +27,7 @@ class CompletionResult:
     tokens_out: int
     latency_s: float
     model: str
+    retries: int = 0
 
 
 class LLMProvider(Protocol):
@@ -40,6 +42,10 @@ class LLMProvider(Protocol):
 
 class ProviderUnavailable(RuntimeError):
     pass
+
+
+class TransientProviderError(ProviderUnavailable):
+    """A 5xx answer or a dropped connection: the only failures that are retried."""
 
 
 class ScriptedLLM:
@@ -80,6 +86,7 @@ class OllamaLLM:
         self.host = host.rstrip("/")
         self.timeout = timeout
         self.settings = {"temperature": temperature, "seed": seed}
+        self.retries = 0
 
     def _request(self, path: str, payload: dict | None = None) -> dict:
         data = json.dumps(payload).encode() if payload is not None else None
@@ -89,8 +96,30 @@ class OllamaLLM:
         try:
             with urllib.request.urlopen(req, timeout=self.timeout) as resp:
                 return json.loads(resp.read())
-        except OSError as exc:
-            raise ProviderUnavailable(f"Ollama not reachable at {self.host}: {exc}") from exc
+        except urllib.error.HTTPError as exc:
+            if exc.code >= 500:
+                raise TransientProviderError(f"Ollama answered {exc.code}") from exc
+            raise ProviderUnavailable(f"Ollama answered {exc.code}") from exc
+        except (urllib.error.URLError, ConnectionError) as exc:
+            if isinstance(getattr(exc, "reason", None), TimeoutError):
+                raise ProviderUnavailable(f"Ollama timed out at {self.host}") from exc
+            raise TransientProviderError(f"Ollama not reachable at {self.host}: {exc}") from exc
+        except OSError as exc:  # timeouts and anything else: not retried
+            raise ProviderUnavailable(f"Ollama call failed at {self.host}: {exc}") from exc
+
+    def warm_up(self) -> None:
+        """Load the model with one tiny call before scoring. Never scored; a failure is noted only.
+
+        On this workstation the model server has crashed while starting (HTTP 500), so the first
+        real request after a model load used to fail.
+        """
+        start = time.perf_counter()
+        try:
+            self.complete("Reply with the word ok.", "ok")
+            self.settings["warm_up"] = f"ok in {time.perf_counter() - start:.1f}s"
+        except ProviderUnavailable as exc:
+            self.settings["warm_up"] = f"failed ({exc})"
+        self.retries = 0  # retries during warm-up are not counted against scored calls
 
     def check_pulled(self) -> None:
         """Refuse to run (and never pull) unless the model is already on this machine."""
@@ -110,8 +139,18 @@ class OllamaLLM:
         }
         if schema is not None:
             payload["format"] = schema
+        payload["options"].pop("warm_up", None)
+        retried = 0
         start = time.perf_counter()
-        body = self._request("/api/chat", payload)
+        try:
+            body = self._request("/api/chat", payload)
+        except TransientProviderError:
+            # One retry, on a 5xx or a dropped connection only. A reply that fails parsing or the
+            # schema is never retried: that check happens in the extractor, after this returns.
+            retried = 1
+            self.retries += 1
+            start = time.perf_counter()
+            body = self._request("/api/chat", payload)
         latency = time.perf_counter() - start
         return CompletionResult(
             text=body["message"]["content"],
@@ -119,6 +158,7 @@ class OllamaLLM:
             tokens_out=int(body.get("eval_count", 0)),
             latency_s=latency,
             model=self.model,
+            retries=retried,
         )
 
 
@@ -195,6 +235,7 @@ def make_provider(name: str, *, model: str | None = None, **kwargs) -> LLMProvid
     if name == "ollama":
         provider = OllamaLLM(model, **kwargs)
         provider.check_pulled()
+        provider.warm_up()
         return provider
     if name == "anthropic":
         return AnthropicLLM(model, **kwargs)

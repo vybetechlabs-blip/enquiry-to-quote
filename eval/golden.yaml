@@ -95,3 +95,10 @@ s23-implied-service:   # added 2026-10-25 (owner ruling): cleaning an office imp
   extraction: {is_enquiry: true, contact_email: ivo@kranjc-media.example, service: regular_office, frequency: weekly, areas: [[2000, sqft]], add_ons: [], out_of_scope: []}
   outcome: quote
   total: "532.00"      # 2000 x 0.07 x 0.95 = 133.00 a visit, x 4
+s24-casual-carpets:   # added 2026-10-25 (owner): a casual carpet request is still a customer inquiry (gpt-oss read h04 as not one)
+  extraction: {is_enquiry: true, contact_email: dev@malhotra-studio.example, service: carpet_cleaning, frequency: one_off, areas: [[1100, sqft]], add_ons: [], out_of_scope: []}
+  outcome: quote
+  total: "330.00"      # 1100 x 0.30
+s25-oversized-no-schedule:   # added 2026-10-25 (owner): a site outside the sanity band hands off even with a field missing
+  extraction: {is_enquiry: true, contact_email: hana.sato@sato-distribution.example, service: regular_office, frequency: null, areas: [[120000, sqft]], add_ons: [], out_of_scope: []}
+  outcome: handoff

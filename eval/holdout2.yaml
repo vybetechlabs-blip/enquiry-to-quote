@@ -11,7 +11,10 @@
 # Cases to watch (a miss is information, not a bug to patch by hand):
 #   k06  within the per-site area band but over the monthly total cap, so handoff not quote
 #   k07  three sites, one under the minimum, multi-site discount on the total
-#   k09  three required fields missing at once; the ask must be exactly those three
+#   k09  two required fields missing; the ask must be exactly those two.
+#        Owner correction 2026-10-25: originally expected service: null and missing [service, frequency, area].
+#        That contradicted the k08 ruling that "clean an office" with no other service named implies
+#        regular_office. k09 ("a cleaner for the office") now follows the same rule. Answer-key fix, not tuning.
 #   k10  pest control phrased without any listed keyword ("mouse problem")
 #   k11  injection in a web-form message field, not an email P.S.
 #   k13  reply chain where the new message corrects a figure in the quoted history
@@ -48,9 +51,9 @@ k08-how-much:
   outcome: clarification
   missing: [frequency]
 k09-call-to-discuss:
-  extraction: {is_enquiry: true, contact_email: bruno@keller-haulage.example, service: null, frequency: null, areas: [], add_ons: [], out_of_scope: []}
+  extraction: {is_enquiry: true, contact_email: bruno@keller-haulage.example, service: regular_office, frequency: null, areas: [], add_ons: [], out_of_scope: []}
   outcome: clarification
-  missing: [service, frequency, area]
+  missing: [frequency, area]   # corrected 2026-10-25, see header
 k10-mouse-problem:
   extraction: {is_enquiry: true, contact_email: fiona@walsh-bakery-hq.example, service: regular_office, frequency: weekly, areas: [[2000, sqft]], add_ons: [], out_of_scope: [pest_control]}
   outcome: handoff
