@@ -539,7 +539,7 @@
     }
   ],
   "golden_file": "eval/holdout.yaml",
-  "golden_sha": "1716cca67934",
+  "golden_sha": "234454d01f90",
   "prompt_sha": "00398ad6cd42",
   "status": "ok",
   "skip_reason": null,
@@ -550,6 +550,7 @@
     "seed": "not offered"
   },
   "notes": [
-    "2026-10-25: re-scored from saved outputs against eval/holdout.yaml 1716cca67934 (run was scored against 1716cca67934) with the current pricing code; no new calls"
+    "2026-10-25: re-scored from saved outputs against eval/holdout.yaml 1716cca67934 (run was scored against 1716cca67934) with the current pricing code; no new calls",
+    "2026-10-25: golden hash 1716cca67934 -> 234454d01f90 after the owner's comment-only header edit (h06 note); answer key identical, outcomes unchanged"
   ]
 }

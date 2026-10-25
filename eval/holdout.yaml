@@ -10,7 +10,7 @@
 # missing = exactly the fields a clarification must ask for.
 #
 # Cases that probe known gaps (a miss here is information, not a bug to patch by hand):
-#   h06  web form with an empty email: no reply address, so handoff (report decision, Checkpoint 0)
+#   h06  web form with an empty email: a clarification cannot be sent without a reply address, so handoff
 #   h09  "twice a week" is not on the rate card and has no Frequency literal; a careful person hands off
 #   h12  out-of-scope service phrased without any listed keyword ("outside of the building's glass facade")
 #   h13  area given as a range; a careful person asks rather than picks a number

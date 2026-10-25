@@ -125,16 +125,22 @@ Rows with several passes show the mean, then the lowest and highest pass in brac
   - h13-area-range: outcome correct (clarification) but it asked for ['frequency'] instead of ['area'].
 - `anthropic:claude-haiku-5-5@v1`: run 2026-10-25; prompt c721c7a1570d.
   - 2026-10-25: re-scored from saved outputs against eval/holdout.yaml 1716cca67934 (run was scored against 1716cca67934) with the current pricing code; no new calls
+  - 2026-10-25: golden hash 1716cca67934 -> 234454d01f90 after the owner's comment-only header edit (h06 note); answer key identical, outcomes unchanged
 - `anthropic:claude-haiku-5-5@v2`: run 2026-10-25; prompt 00398ad6cd42; 3 passes; effort low, temperature not accepted, seed not offered.
   - 2026-10-25: re-scored from saved outputs against eval/holdout.yaml 1716cca67934 (run was scored against 1716cca67934) with the current pricing code; no new calls
+  - 2026-10-25: golden hash 1716cca67934 -> 234454d01f90 after the owner's comment-only header edit (h06 note); answer key identical, outcomes unchanged
 - `anthropic:claude-haiku-5-5@v2+guard`: run 2026-10-25; prompt 00398ad6cd42; 3 passes; effort low, temperature not accepted, seed not offered.
   - 2026-10-25: re-scored from saved outputs against eval/holdout.yaml 1716cca67934 (run was scored against 1716cca67934) with the current pricing code; no new calls
+  - 2026-10-25: golden hash 1716cca67934 -> 234454d01f90 after the owner's comment-only header edit (h06 note); answer key identical, outcomes unchanged
 - `ollama:gpt-oss:20b@v1`: run 2026-10-25; prompt c721c7a1570d.
   - 2026-10-25: re-scored from saved outputs against eval/holdout.yaml 1716cca67934 (run was scored against 1716cca67934) with the current pricing code; no new calls
+  - 2026-10-25: golden hash 1716cca67934 -> 234454d01f90 after the owner's comment-only header edit (h06 note); answer key identical, outcomes unchanged
 - `ollama:gpt-oss:20b@v2`: run 2026-10-25; prompt 00398ad6cd42; 3 passes; temperature 0.0, seed 42.
   - 2026-10-25: re-scored from saved outputs against eval/holdout.yaml 1716cca67934 (run was scored against 1716cca67934) with the current pricing code; no new calls
+  - 2026-10-25: golden hash 1716cca67934 -> 234454d01f90 after the owner's comment-only header edit (h06 note); answer key identical, outcomes unchanged
 - `ollama:gpt-oss:20b@v2+guard`: run 2026-10-25; prompt 00398ad6cd42; 3 passes; temperature 0.0, seed 42.
   - 2026-10-25: re-scored from saved outputs against eval/holdout.yaml 1716cca67934 (run was scored against 1716cca67934) with the current pricing code; no new calls
+  - 2026-10-25: golden hash 1716cca67934 -> 234454d01f90 after the owner's comment-only header edit (h06 note); answer key identical, outcomes unchanged
 
 ### Outcome spread across passes
 

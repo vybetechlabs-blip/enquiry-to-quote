@@ -20,9 +20,9 @@ The figures count correct outcomes: quote, clarification or handoff. Across ever
 **How blind the held-out sets are.** Both were written in a separate Claude chat session that had not seen the extractor code or the original samples (provenance in each file's header).
 - **Held-out set 1 is not blind** for the model rows: the prompt was written after it had been seen.
 - **Held-out set 2 is blind as written:** it was produced after the prompt was frozen, and nobody looked at it before the first scored run.
-  - On set 2, Haiku with prompt v2 chose the right outcome for all 15 inquiries, under the original answer key and after the correction below. It priced all 9 expected quotes to the cent.
-  - It asked for exactly the missing fields on 1 of the 2 clarifications. That was 0 of 2 under the original key, before one owner correction to the answer key (k09, recorded in [`eval/holdout2.yaml`](eval/holdout2.yaml)).
-  - On the other clarification (k08) it also asks which service the customer means, where the owner reads "clean an office" as regular cleaning.
+  - On set 2, Haiku with prompt v2 chose the right outcome for all 15 inquiries, both before and after one owner correction to the answer key (k09, recorded in [`eval/holdout2.yaml`](eval/holdout2.yaml)). It priced all 9 expected quotes to the cent.
+  - Counting a case as fully correct only when the outcome, the total and the fields a clarification asks for all match, it got 13/15 under the original key and 14/15 after the correction.
+  - The remaining miss is k08: Haiku also asks which service the customer means, and under the owner's answer key, which reads "clean an office" as regular cleaning, that counts as a miss.
 
 Haiku costs $0.000331 per inquiry at the published price, with a mean latency of 1.8 s. `gpt-oss:20b` runs locally at no per-token charge, with a mean latency of 4.2 s.
 
