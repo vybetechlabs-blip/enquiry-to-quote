@@ -21,7 +21,7 @@ llm = [
 ]
 
 [tool.uv.sources]
-smb-agent-kit = { git = "https://github.com/vybetechlabs-blip/smb-agent-kit", rev = "bdf60bda24beb778b4cbd93c22d72e67c752b26a" }
+smb-agent-kit = { git = "https://github.com/vybetechlabs-blip/smb-agent-kit", rev = "15f062d76892164a24a5d4c6f2efeb9225e651f5" }
 
 [build-system]
 requires = ["hatchling"]
