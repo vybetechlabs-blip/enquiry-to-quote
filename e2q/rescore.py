@@ -12,14 +12,13 @@ rows are always rebuilt from their unguarded row's outputs, so they never need t
 
 from __future__ import annotations
 
-import hashlib
 import json
-import subprocess
 from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
 
 import yaml
+from smb_agent_kit import evals
 
 from e2q.config import Business
 from e2q.evaluate import ROOT, CaseResult, EvalResult, score_case, sha
@@ -34,24 +33,8 @@ PARSE_FAILURE = "extraction_failed:invalid_reply"
 
 
 def golden_at(golden_path: Path, golden_sha: str) -> dict:
-    """The golden file as it was when a run was scored, found by hash in the working tree or git."""
-    if sha(golden_path) == golden_sha:
-        return yaml.safe_load(golden_path.read_text(encoding="utf-8"))
-    rel = golden_path.relative_to(ROOT).as_posix()
-    revs = subprocess.run(
-        ["git", "-C", str(ROOT), "log", "--format=%H", "--", rel],
-        capture_output=True, text=True, check=True,
-    ).stdout.split()  # fmt: skip
-    for rev in revs:
-        blob = subprocess.run(
-            ["git", "-C", str(ROOT), "show", f"{rev}:{rel}"], capture_output=True, check=True
-        ).stdout
-        lf = blob.replace(b"\r\n", b"\n")
-        # git stores LF; on Windows the working copy a run hashed may have had CRLF endings.
-        for variant in (blob, lf, lf.replace(b"\n", b"\r\n")):
-            if hashlib.sha256(variant).hexdigest()[:12] == golden_sha:
-                return yaml.safe_load(variant.decode("utf-8"))
-    raise LookupError(f"no version of {rel} with hash {golden_sha} in the tree or git history")
+    """The golden file as it was when a run was scored (kit lookup by hash, this repo's git)."""
+    return evals.golden_at(golden_path, golden_sha, ROOT)
 
 
 def rebuild(case: CaseResult, old_expected: dict | None) -> Enquiry:

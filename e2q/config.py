@@ -6,8 +6,8 @@ from decimal import Decimal
 from pathlib import Path
 from typing import Literal
 
-import yaml
 from pydantic import BaseModel
+from smb_agent_kit.config import load_yaml, require_fictional
 
 from e2q.schema import AreaUnit
 
@@ -89,8 +89,8 @@ class Business(BaseModel):
 
 def load_business(business_dir: Path | None = None) -> Business:
     root = Path(business_dir) if business_dir else DEFAULT_BUSINESS_DIR
-    profile = yaml.safe_load((root / "business.yaml").read_text(encoding="utf-8"))
-    card = yaml.safe_load((root / "pricing.yaml").read_text(encoding="utf-8"))
+    profile = require_fictional(load_yaml(root / "business.yaml"), root / "business.yaml")
+    card = load_yaml(root / "pricing.yaml")
     return Business(
         profile=BusinessProfile.model_validate(profile),
         rate_card=RateCard.model_validate(card),

@@ -11,12 +11,15 @@ from __future__ import annotations
 
 import hashlib
 import json
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from decimal import Decimal
 from pathlib import Path
+from typing import ClassVar
 
 import yaml
+from smb_agent_kit import evals
+from smb_agent_kit.evals import EvalRun, cell, render_spread, sha
 
 from e2q.config import Business
 from e2q.draft import build_draft
@@ -62,11 +65,6 @@ def normalize(name: str, value):
     return value
 
 
-def sha(path: Path) -> str:
-    """Content hash of a golden file, with line endings normalised so CRLF and LF copies agree."""
-    return hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()[:12]
-
-
 @dataclass
 class CaseResult:
     sample_id: str
@@ -97,19 +95,10 @@ class CaseResult:
         )
 
 
-@dataclass
-class EvalResult:
-    extractor: str
-    run_date: str
-    cases: list[CaseResult]
-    golden_file: str = "eval/golden.yaml"
-    golden_sha: str = ""
-    prompt_sha: str | None = None
-    status: str = "ok"  # ok | skipped
-    skip_reason: str | None = None
-    pass_index: int = 1
-    settings: dict = field(default_factory=dict)
-    notes: list[str] = field(default_factory=list)
+class EvalResult(EvalRun):
+    """A saved pass (field order and JSON from the kit's EvalRun) plus this project's measures."""
+
+    case_type: ClassVar[type] = CaseResult
 
     def field_accuracy(self) -> dict[str, tuple[int, int]]:
         n = len(self.cases)
@@ -125,15 +114,6 @@ class EvalResult:
     def clarification_exactness(self) -> tuple[int, int]:
         clar = [c for c in self.cases if c.clarification_exact is not None]
         return sum(bool(c.clarification_exact) for c in clar), len(clar)
-
-    def to_json(self) -> str:
-        return json.dumps(asdict(self), indent=2) + "\n"
-
-    @classmethod
-    def from_json(cls, text: str) -> EvalResult:
-        data = json.loads(text)
-        data["cases"] = [CaseResult(**c) for c in data["cases"]]
-        return cls(**data)
 
 
 def provider_settings(extractor) -> dict:
@@ -235,33 +215,18 @@ def skipped(row: str, golden_path: Path, reason: str) -> EvalResult:
 def run_path(
     row: str, golden_path: Path, runs_dir: Path | None = None, pass_index: int = 1
 ) -> Path:
-    slug = row.replace(":", "_").replace("/", "_").replace("@", "_").replace("+", "_")
-    tag = f"__p{pass_index}" if pass_index > 1 or "@" in row else ""
-    return (runs_dir or RUNS) / f"{slug}{tag}__{golden_path.stem}.json"
+    return evals.run_path(row, golden_path, runs_dir or RUNS, pass_index)
 
 
 def save_run(result: EvalResult, golden_path: Path, runs_dir: Path | None = None) -> Path:
-    path = run_path(result.extractor, golden_path, runs_dir, result.pass_index)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(result.to_json(), encoding="utf-8", newline="\n")
-    return path
+    return evals.save_run(result, golden_path, runs_dir or RUNS)
 
 
 def saved_runs(golden_path: Path, runs_dir: Path | None = None) -> list[EvalResult]:
-    runs_dir = runs_dir or RUNS
-    if not runs_dir.exists():
-        return []
-    return [
-        EvalResult.from_json(p.read_text(encoding="utf-8"))
-        for p in sorted(runs_dir.glob(f"*__{golden_path.stem}.json"))
-    ]
+    return evals.load_runs(EvalResult, golden_path, runs_dir or RUNS)
 
 
 # --- report -------------------------------------------------------------------------------
-
-
-def pct(ok: int, n: int) -> str:
-    return f"{ok}/{n} ({100 * ok / n:.0f}%)" if n else "n/a"
 
 
 def display(name: str) -> str:
@@ -272,11 +237,7 @@ def display(name: str) -> str:
 
 
 def group_runs(results: list[EvalResult]) -> dict[str, list[EvalResult]]:
-    groups: dict[str, list[EvalResult]] = {}
-    for r in results:
-        groups.setdefault(r.extractor, []).append(r)
-    order = sorted(groups, key=lambda n: (n != "RuleExtractor", display(n)))
-    return {n: sorted(groups[n], key=lambda r: r.pass_index) for n in order}
+    return evals.group_runs(results, display, first="RuleExtractor")
 
 
 def measures(result: EvalResult) -> list[tuple[int, int]]:
@@ -301,23 +262,8 @@ MEASURES = [
 ]
 
 
-def cell(values: list[tuple[int, int]]) -> str:
-    if len(values) == 1:
-        return pct(*values[0])
-    oks = [ok for ok, _ in values]
-    n = values[0][1]
-    mean = sum(oks) / len(oks)
-    return f"{mean:.1f}/{n} ({min(oks)}-{max(oks)})" if n else "n/a"
-
-
 def label(name: str, runs: list[EvalResult], current: str) -> str:
-    ok = [r for r in runs if r.status == "ok"]
-    if not ok:
-        return f"{display(name)} (skipped)"
-    text = display(name) + (f" x{len(ok)}" if len(ok) > 1 else "")
-    if all(r.golden_sha != current for r in ok):
-        text += " (stale)"
-    return text
+    return evals.label(name, runs, current, display)
 
 
 def render_set(title: str, golden_path: Path, results: list[EvalResult]) -> list[str]:
@@ -381,23 +327,7 @@ def render_set(title: str, golden_path: Path, results: list[EvalResult]) -> list
                     )
     out.append("")
 
-    multi = {k: [r for r in v if r.status == "ok"] for k, v in groups.items()}
-    multi = {k: v for k, v in multi.items() if len(v) > 1 and v[0].golden_sha == current}
-    if multi:
-        out += [
-            "### Outcome spread across passes",
-            "",
-            "| Row | Passes | Best | Worst | Mean |",
-            "|---|---|---|---|---|",
-        ]
-        for name, runs in multi.items():
-            oks = [r.outcome_accuracy()[0] for r in runs]
-            total = runs[0].outcome_accuracy()[1]
-            out.append(
-                f"| {display(name)} | {len(runs)} | {max(oks)}/{total} | {min(oks)}/{total} "
-                f"| {sum(oks) / len(oks):.1f}/{total} |"
-            )
-        out.append("")
+    out += render_spread(groups, current, EvalResult.outcome_accuracy, display)
 
     live = {
         k: [r for r in v if r.status == "ok" and r.golden_sha == current] for k, v in groups.items()
@@ -507,73 +437,19 @@ def render_watch(sets: list[tuple[str, Path, list[EvalResult]]]) -> list[str]:
 
 
 def render_cost(sets: list[tuple[str, Path, list[EvalResult]]], prices: dict) -> list[str]:
-    groups: dict[str, list[CaseResult]] = {}
-    passes: dict[str, set[int]] = {}
-    settings: dict[str, dict] = {}
-    for _title, golden_path, results in sets:
-        current = sha(golden_path)
-        for r in results:
-            if r.status != "ok" or not r.prompt_sha or r.extractor.endswith("+guard"):
-                continue
-            if r.golden_sha != current:
-                continue
-            groups.setdefault(r.extractor, []).extend(c for c in r.cases if c.tokens_in is not None)
-            passes.setdefault(r.extractor, set()).add(r.pass_index)
-            settings[r.extractor] = r.settings
-    if not groups:
-        return []
-    out = [
-        "## Cost and latency (LLM rows)",
-        "",
-        "One extraction call per inquiry, recorded per call in `eval/runs/`. Guard rows score the",
-        "same calls as their unguarded row, so they add no calls and are not listed. Stale rows",
-        "are left out.",
-        "",
-        "| Row | Passes | Calls | Retries | Mean tokens in | Mean tokens out | Mean latency (s) | Max latency (s) | Cost per inquiry | Cost, all calls |",
-        "|---|---|---|---|---|---|---|---|---|---|",
-    ]
-    notes = []
-    for name in sorted(groups, key=display):
-        cases = groups[name]
-        model = name.split(":", 1)[1].split("@", 1)[0] if ":" in name else name
-        price = prices.get(model, {})
-        k = len(cases)
-        if not k:
-            continue
-        tin = sum(c.tokens_in for c in cases) / k
-        tout = sum(c.tokens_out for c in cases) / k
-        lat = [c.latency_s for c in cases]
-        if price.get("local"):
-            per, total = "$0 (local)", "$0"
-        elif "input_per_mtok" in price:
-            pin, pout = float(price["input_per_mtok"]) / 1e6, float(price["output_per_mtok"]) / 1e6
-            per = f"${tin * pin + tout * pout:.6f}"
-            total = f"${sum(c.tokens_in * pin + c.tokens_out * pout for c in cases):.4f}"
-        else:
-            per, total = "unverified", "unverified"
-        if name.startswith("ollama:"):
-            retries = str(sum(c.retries or 0 for c in cases))
-        else:
-            retries = "n/a (SDK)"
-        out.append(
-            f"| {display(name)} | {len(passes[name])} | {k} | {retries} | {tin:,.0f} | {tout:,.0f} | {sum(lat) / k:.1f} "
-            f"| {max(lat):.1f} | {per} | {total} |"
-        )
-        if settings.get(name):
-            notes.append(
-                f"- `{display(name)}` settings: "
-                + ", ".join(f"{a} {b}" for a, b in settings[name].items())
-                + "."
-            )
-    for model, price in prices.items():
-        if price.get("source"):
-            notes.append(
-                f"- `{model}` price: ${price['input_per_mtok']} / MTok in, ${price['output_per_mtok']} / MTok out "
-                f"({price.get('condition', '')}); source {price['source']}, fetched {price['fetched']}."
-            )
-        elif price.get("local"):
-            notes.append(f"- `{model}`: {price.get('note', 'runs locally')}")
-    return [*out, "", *notes, ""]
+    return evals.render_cost(
+        sets,
+        prices,
+        intro=[
+            "One extraction call per inquiry, recorded per call in `eval/runs/`. Guard rows score the",
+            "same calls as their unguarded row, so they add no calls and are not listed. Stale rows",
+            "are left out.",
+        ],
+        noun="inquiry",
+        display=display,
+        include=lambda r: not r.extractor.endswith("+guard"),
+        counts_retries=lambda name: name.startswith("ollama:"),
+    )
 
 
 def render_report(
