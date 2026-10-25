@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC held-out enquiry. Invented business, people and figures. Written 2026-10-25 by a separate agent (Claude chat) that had not seen inbox/samples/ or e2q/extract/rules.py.",
+  "id": "h13-area-range",
+  "source": "email",
+  "received_at": "2026-10-25T12:40:00+00:00",
+  "from": "Beatriz Nunes <beatriz@nunes-logistics.example>",
+  "subject": "Daily cleaning",
+  "body": "Hello,\n\nWe need the office cleaned every weekday evening. I don't have the exact floor plan to hand but it's somewhere between 2,000 and 3,000 square feet. Can you give me a monthly figure?\n\nBeatriz"
+}

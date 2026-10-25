@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC held-out enquiry. Invented business, people and figures. Written 2026-10-25 by a separate agent (Claude chat) that had not seen inbox/samples/ or e2q/extract/rules.py.",
+  "id": "h05-metric-fortnightly",
+  "source": "email",
+  "received_at": "2026-10-24T14:48:00+00:00",
+  "from": "Ingrid Solberg <ingrid@solberg-translation.example>",
+  "subject": "Office cleaning quote",
+  "body": "Good afternoon,\n\nCould you quote for cleaning our office every two weeks? It is about 250 m² on one floor, carpet tiles throughout, six people.\n\nKind regards,\nIngrid Solberg"
+}

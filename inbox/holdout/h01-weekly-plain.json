@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC held-out enquiry. Invented business, people and figures. Written 2026-10-25 by a separate agent (Claude chat) that had not seen inbox/samples/ or e2q/extract/rules.py.",
+  "id": "h01-weekly-plain",
+  "source": "email",
+  "received_at": "2026-10-24T08:12:00+00:00",
+  "from": "Marisol Vega <marisol@vega-architecture.example>",
+  "subject": "Cleaners for our office",
+  "body": "Hi there,\n\nWe're a small architecture firm and we need someone to come in and clean the office every week, ideally on a Friday evening. The space is about 3,800 square feet, open plan with two meeting rooms and a kitchenette.\n\nCould you send me a price?\n\nThanks,\nMarisol Vega\nVega Architecture"
+}

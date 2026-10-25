@@ -1,0 +1,17 @@
+{
+  "_synthetic": "SYNTHETIC held-out enquiry. Invented business, people and figures. Written 2026-10-25 by a separate agent (Claude chat) that had not seen inbox/samples/ or e2q/extract/rules.py.",
+  "id": "h06-form-no-email",
+  "source": "webform",
+  "received_at": "2026-10-24T16:03:00+00:00",
+  "fields": {
+    "name": "Pat Delaney",
+    "email": "",
+    "company": "Delaney Physio",
+    "service": "Office cleaning",
+    "frequency": "Weekly",
+    "area": "1500",
+    "area_unit": "sq ft",
+    "extras": "",
+    "message": "Call me on the number I gave reception. Need someone to start next month."
+  }
+}

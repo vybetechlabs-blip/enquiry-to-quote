@@ -212,12 +212,15 @@ def send(
 def eval_cmd(
     out: Path = typer.Option(Path("eval/REPORT.md"), help="Where to write the report."),
 ) -> None:
-    """Run the golden set end to end with RuleExtractor and write eval/REPORT.md."""
-    from e2q.evaluate import run_eval, write_report
+    """Run each golden set (original, then held-out if present) and write eval/REPORT.md."""
+    from e2q.evaluate import default_sets, run_eval, write_report
 
     business = load_business(state.business_dir)
-    result = run_eval(business)
-    write_report(result, out)
+    sections = [
+        (title, shown, run_eval(business, golden_path=golden, samples_dir=samples))
+        for title, shown, golden, samples in default_sets()
+    ]
+    write_report(sections, out)
     typer.echo(out.read_text(encoding="utf-8"))
 
 

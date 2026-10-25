@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC held-out enquiry. Invented business, people and figures. Written 2026-10-25 by a separate agent (Claude chat) that had not seen inbox/samples/ or e2q/extract/rules.py.",
+  "id": "h14-kiosk-tiny",
+  "source": "email",
+  "received_at": "2026-10-25T13:55:00+00:00",
+  "from": "Yusuf Demir <yusuf@demir-coffee.example>",
+  "subject": "Small kiosk",
+  "body": "Hi, we have a coffee kiosk in the lobby of an office tower, it's only about 100 square feet. Could someone wipe it down and mop once a week? What would you charge?\n\nYusuf"
+}

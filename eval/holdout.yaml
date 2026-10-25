@@ -1,0 +1,72 @@
+# Held-out set for inbox/holdout/. SYNTHETIC: every enquiry is invented.
+#
+# Provenance (2026-10-25): written by a separate agent (Claude in chat) in a session that had NOT seen
+# inbox/samples/ or e2q/extract/rules.py. It HAD seen business/pricing.yaml, business/business.yaml
+# (which carries the extractor's keyword maps), e2q/schema.py and eval/golden.yaml (expected values,
+# not sample texts). Phrasings were chosen the way a customer writes, not the way the keyword maps read.
+# Expected values are hand-worked from the rate card; the arithmetic sits beside each total.
+#
+# Same format as golden.yaml: areas = [[area, unit]] per site in the order mentioned; total only for quotes;
+# missing = exactly the fields a clarification must ask for.
+#
+# Cases that probe known gaps (a miss here is information, not a bug to patch by hand):
+#   h06  web form with an empty email: no reply address, so handoff (report decision, Checkpoint 0)
+#   h09  "twice a week" is not on the rate card and has no Frequency literal; a careful person hands off
+#   h12  out-of-scope service phrased without any listed keyword ("outside of the building's glass facade")
+#   h13  area given as a range; a careful person asks rather than picks a number
+#   h14  100 sq ft is under the sanity band's minimum site area, so handoff not quote
+
+h01-weekly-plain:
+  extraction: {is_enquiry: true, contact_email: marisol@vega-architecture.example, service: regular_office, frequency: weekly, areas: [[3800, sqft]], add_ons: [], out_of_scope: []}
+  outcome: quote
+  total: "1010.80"      # 3800 x 0.07 x 0.95 = 252.70 a visit, x 4
+h02-every-other-week-form:
+  extraction: {is_enquiry: true, contact_email: jonah@petersen-bookkeeping.example, service: regular_office, frequency: fortnightly, areas: [[2400, sqft]], add_ons: [], out_of_scope: []}
+  outcome: quote
+  total: "336.00"       # 2400 x 0.07 x 1.00 = 168.00 a visit, x 2
+h03-move-in-thorough:
+  extraction: {is_enquiry: true, contact_email: farah@haddad-ventures.example, service: deep_clean, frequency: one_off, areas: [[5000, sqft]], add_ons: [], out_of_scope: []}
+  outcome: quote
+  total: "1100.00"      # 5000 x 0.22
+h04-carpets-shampoo:
+  extraction: {is_enquiry: true, contact_email: devon.clarke@ridgeline-recruit.example, service: carpet_cleaning, frequency: one_off, areas: [[900, sqft]], add_ons: [], out_of_scope: []}
+  outcome: quote
+  total: "270.00"       # 900 x 0.30
+h05-metric-fortnightly:
+  extraction: {is_enquiry: true, contact_email: ingrid@solberg-translation.example, service: regular_office, frequency: fortnightly, areas: [[250, sqm]], add_ons: [], out_of_scope: []}
+  outcome: quote
+  total: "376.74"       # 250 sqm -> 2691 sq ft (same rounding as s04); 2691 x 0.07 x 1.00 = 188.37, x 2
+h06-form-no-email:
+  extraction: {is_enquiry: true, contact_email: null, service: regular_office, frequency: weekly, areas: [[1500, sqft]], add_ons: [], out_of_scope: []}
+  outcome: handoff
+h07-twelve-desks-no-area:
+  extraction: {is_enquiry: true, contact_email: kwame@mensah-surveying.example, service: regular_office, frequency: weekly, areas: [], add_ons: [], out_of_scope: []}
+  outcome: clarification
+  missing: [area]
+h08-two-locations:
+  extraction: {is_enquiry: true, contact_email: helena.marsh@marsh-distribution.example, service: regular_office, frequency: weekly, areas: [[6000, sqft], [1200, sqft]], add_ons: [], out_of_scope: []}
+  outcome: quote
+  total: "1972.20"      # site 1: 6000 x 0.07 x 0.95 = 399.00; site 2: 79.80 topped up to 120.00; 519.00 x 4 = 2076.00, less 5% (103.80)
+h09-twice-a-week:
+  extraction: {is_enquiry: true, contact_email: ravi@anand-dental.example, service: regular_office, frequency: null, areas: [[2200, sqft]], add_ons: [], out_of_scope: []}
+  outcome: handoff        # frequency asked for is not offered; not a clarification, the customer was specific
+h10-ps-injection:
+  extraction: {is_enquiry: true, contact_email: tobias@lind-consulting.example, service: regular_office, frequency: weekly, areas: [[2000, sqft]], add_ons: [], out_of_scope: []}
+  outcome: handoff
+h11-job-applicant:
+  extraction: {is_enquiry: false, contact_email: lucia.ferreira@mailbox.example, service: null, frequency: null, areas: [], add_ons: [], out_of_scope: []}
+  outcome: handoff
+h12-glass-facade:
+  extraction: {is_enquiry: true, contact_email: simon@achebe-media.example, service: regular_office, frequency: weekly, areas: [[3000, sqft]], add_ons: [], out_of_scope: [exterior_windows]}
+  outcome: handoff
+h13-area-range:
+  extraction: {is_enquiry: true, contact_email: beatriz@nunes-logistics.example, service: regular_office, frequency: daily, areas: [], add_ons: [], out_of_scope: []}
+  outcome: clarification
+  missing: [area]
+h14-kiosk-tiny:
+  extraction: {is_enquiry: true, contact_email: yusuf@demir-coffee.example, service: regular_office, frequency: weekly, areas: [[100, sqft]], add_ons: [], out_of_scope: []}
+  outcome: handoff        # below sanity_band.min_area_per_site (150)
+h15-daily-fridge:
+  extraction: {is_enquiry: true, contact_email: grace@whitfield-law.example, service: regular_office, frequency: daily, areas: [[4000, sqft]], add_ons: [kitchen_appliances], out_of_scope: []}
+  outcome: quote
+  total: "5460.00"      # 4000 x 0.07 x 0.85 = 238.00 + 35.00 = 273.00 a visit, x 20

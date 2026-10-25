@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC held-out enquiry. Invented business, people and figures. Written 2026-10-25 by a separate agent (Claude chat) that had not seen inbox/samples/ or e2q/extract/rules.py.",
+  "id": "h11-job-applicant",
+  "source": "email",
+  "received_at": "2026-10-25T10:10:00+00:00",
+  "from": "Lucia Ferreira <lucia.ferreira@mailbox.example>",
+  "subject": "Looking for cleaning work",
+  "body": "Hello,\n\nI have five years' experience in commercial cleaning and I'm looking for evening or weekend work. I'm reliable and have my own transport. Please let me know if you have any openings. I can send references.\n\nThank you,\nLucia Ferreira"
+}

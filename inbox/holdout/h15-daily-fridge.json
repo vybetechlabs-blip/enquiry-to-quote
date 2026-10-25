@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC held-out enquiry. Invented business, people and figures. Written 2026-10-25 by a separate agent (Claude chat) that had not seen inbox/samples/ or e2q/extract/rules.py.",
+  "id": "h15-daily-fridge",
+  "source": "email",
+  "received_at": "2026-10-25T15:08:00+00:00",
+  "from": "Grace Whitfield <grace@whitfield-law.example>",
+  "subject": "Daily cleaning for 4,000 sq ft office",
+  "body": "Good afternoon,\n\nWe'd like daily cleaning, Monday to Friday, for our 4,000 sq ft office. As well as the usual, please include wiping down the fridge and microwave in the staff kitchen each visit.\n\nPlease send a monthly price.\n\nGrace Whitfield\nOffice Manager, Whitfield Law"
+}

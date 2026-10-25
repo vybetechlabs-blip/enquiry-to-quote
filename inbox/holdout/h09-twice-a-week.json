@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC held-out enquiry. Invented business, people and figures. Written 2026-10-25 by a separate agent (Claude chat) that had not seen inbox/samples/ or e2q/extract/rules.py.",
+  "id": "h09-twice-a-week",
+  "source": "email",
+  "received_at": "2026-10-25T09:02:00+00:00",
+  "from": "Ravi Anand <ravi@anand-dental.example>",
+  "subject": "Twice weekly clean",
+  "body": "Hi,\n\nWe run a busy dental practice and need the place cleaned twice a week, Tuesday and Friday nights. About 2,200 square feet, two treatment rooms, waiting area, reception and a staff room.\n\nCan you do twice a week and what would it cost?\n\nDr Ravi Anand"
+}

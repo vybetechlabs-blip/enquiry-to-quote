@@ -21,6 +21,19 @@ def test_every_sample_is_labelled_synthetic_and_has_a_golden_entry():
     assert set(golden) == {p.stem for p in files}
 
 
+def test_holdout_set_pairs_every_file_with_an_entry():
+    # The held-out files are owner-supplied and never edited here; this only checks they pair up.
+    from e2q.evaluate import HOLDOUT, HOLDOUT_SAMPLES
+
+    if not HOLDOUT.exists():
+        pytest.skip("no held-out set present")
+    holdout = yaml.safe_load(HOLDOUT.read_text("utf-8"))
+    files = {p.stem for p in HOLDOUT_SAMPLES.glob("*.json")}
+    assert set(holdout) == files
+    for path in HOLDOUT_SAMPLES.glob("*.json"):
+        assert json.loads(path.read_text("utf-8"))["_synthetic"].startswith("SYNTHETIC")
+
+
 def test_golden_set_covers_the_required_cases():
     golden = yaml.safe_load(GOLDEN.read_text("utf-8"))
     outcomes = {g["outcome"] for g in golden.values()}

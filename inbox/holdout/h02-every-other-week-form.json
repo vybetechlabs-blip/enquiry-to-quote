@@ -1,0 +1,17 @@
+{
+  "_synthetic": "SYNTHETIC held-out enquiry. Invented business, people and figures. Written 2026-10-25 by a separate agent (Claude chat) that had not seen inbox/samples/ or e2q/extract/rules.py.",
+  "id": "h02-every-other-week-form",
+  "source": "webform",
+  "received_at": "2026-10-24T09:40:00+00:00",
+  "fields": {
+    "name": "Jonah Petersen",
+    "email": "jonah@petersen-bookkeeping.example",
+    "company": "Petersen Bookkeeping",
+    "service": "General cleaning",
+    "frequency": "Every other week",
+    "area": "2,400",
+    "area_unit": "sq ft",
+    "extras": "None",
+    "message": "Just the usual: floors, desks, bins, bathroom. We close at 5."
+  }
+}
