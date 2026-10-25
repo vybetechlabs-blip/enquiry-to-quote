@@ -59,7 +59,7 @@ def describe_reason(reason: str, business: Business) -> str:
     kind, _, detail = reason.partition(":")
     if kind == "not_an_enquiry":
         return (
-            "It does not read as a customer enquiry (it looks like a vendor pitch or newsletter)."
+            "It does not read as a customer inquiry (it looks like a vendor pitch or newsletter)."
         )
     if kind == "injection":
         return (

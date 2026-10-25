@@ -1,9 +1,13 @@
 name: CI
 
+# Push and pull request: two jobs (Windows 3.12, Ubuntu 3.11).
+# Manual run (Actions tab, "Run workflow"): the full matrix, Ubuntu 3.11/3.12/3.13 + Windows 3.12.
+
 on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 jobs:
   test:
@@ -12,11 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
-        python: ["3.11", "3.12", "3.13"]
-        include:
-          - os: windows-latest
-            python: "3.12"
+        include: ${{ fromJSON(github.event_name == 'workflow_dispatch' && '[{"os":"ubuntu-latest","python":"3.11"},{"os":"ubuntu-latest","python":"3.12"},{"os":"ubuntu-latest","python":"3.13"},{"os":"windows-latest","python":"3.12"}]' || '[{"os":"windows-latest","python":"3.12"},{"os":"ubuntu-latest","python":"3.11"}]') }}
     steps:
       - uses: actions/checkout@v4
 

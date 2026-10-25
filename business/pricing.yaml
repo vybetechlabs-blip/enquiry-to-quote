@@ -29,7 +29,7 @@ services:
 frequencies:
   daily:       { rule_id: FREQ-DAILY,       multiplier: "0.85", visits_per_month: 20, label: daily on weekdays }
   weekly:      { rule_id: FREQ-WEEKLY,      multiplier: "0.95", visits_per_month: 4,  label: weekly }
-  fortnightly: { rule_id: FREQ-FORTNIGHTLY, multiplier: "1.00", visits_per_month: 2,  label: fortnightly }
+  fortnightly: { rule_id: FREQ-FORTNIGHTLY, multiplier: "1.00", visits_per_month: 2,  label: "every two weeks" }
   monthly:     { rule_id: FREQ-MONTHLY,     multiplier: "1.10", visits_per_month: 1,  label: monthly }
   one_off:     { rule_id: FREQ-ONE-OFF,     multiplier: "1.00", visits_per_month: 1,  label: one-off }
 

@@ -1,7 +1,7 @@
 Subject: [Needs a person] $enquiry_id
 INTERNAL NOTE. Not for the customer.
 
-Enquiry $enquiry_id from $contact ($source) needs a person because:
+Inquiry $enquiry_id from $contact ($source) needs a person because:
 $reasons
 
 What the extractor read:
