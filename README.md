@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/vybetechlabs-blip/enquiry-to-quote/actions/workflows/ci.yml/badge.svg)](https://github.com/vybetechlabs-blip/enquiry-to-quote/actions/workflows/ci.yml)
 
-**Status: Active, Phase 1 complete, public release pending.**
+**Status: Active, Phase 1 complete. Its generic parts come from [smb-agent-kit](https://github.com/vybetechlabs-blip/smb-agent-kit), pinned to tag `v0.1.0`.**
 
 ## Problem and result
 A service business that answers inquiries by hand reads each message, works out a price, and writes the reply hours later. This repo is a proof of concept for the first half of that job. An inquiry arrives as an email or a web-form submission. It comes out as a priced draft reply that waits for a person to approve it. A language model may read the inquiry, but it never sets a price: prices come from a rate card through a pure function, and every quote lists the rules that produced each line.
@@ -147,4 +147,4 @@ With `--guard`, `RuleExtractor` reads each inquiry too, and the inquiry goes to 
 License: MIT, see [LICENSE](LICENSE). Fernwick Commercial Cleaning and every inquiry in this repo are fictional; any resemblance to real companies or people is coincidental.
 
 ## Status
-**Status: Active, Phase 1 complete, public release pending.** The test and lint commands are listed under Run it locally.
+**Status: Active, Phase 1 complete. Its generic parts come from [smb-agent-kit](https://github.com/vybetechlabs-blip/smb-agent-kit), pinned to tag `v0.1.0`.** The test and lint commands are listed under Run it locally.
