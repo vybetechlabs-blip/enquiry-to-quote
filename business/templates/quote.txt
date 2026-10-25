@@ -1,7 +1,7 @@
 Subject: Your cleaning quote from $business
 Hi $first_name,
 
-Thanks for getting in touch. Here is our price for the work you described.
+$opening Here is our price for the work you described.
 
 $line_items
 

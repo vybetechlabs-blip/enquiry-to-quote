@@ -1,9 +1,7 @@
 import pytest
 from conftest import load_sample
 
-from e2q.extract import LLMExtractor
 from e2q.extract.rules import normalize_unit, strip_quoted
-from e2q.providers import ScriptedLLM
 from e2q.schema import RawEnquiry
 
 
@@ -106,8 +104,3 @@ def test_missing_sender_address_is_missing(extractor):
     e = extractor.extract(email("Regular office cleaning, weekly, 2,000 sq ft.", sender="Pat"))
     assert e.contact_email is None
     assert "contact_email" in e.missing_fields
-
-
-def test_llm_extractor_is_not_wired_in_phase_0(business):
-    with pytest.raises(NotImplementedError):
-        LLMExtractor(business, ScriptedLLM([])).extract(email("hi"))

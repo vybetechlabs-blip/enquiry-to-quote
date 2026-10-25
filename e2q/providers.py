@@ -1,23 +1,40 @@
 """LLM provider factory: scripted / ollama / anthropic behind one interface.
 
-Nothing here runs unless `--llm` mode is chosen (Phase 1). The scripted provider makes tests
-deterministic; Ollama is used only if it is already running locally; Anthropic needs a key in
-the environment and an explicit model id from the owner (no default model is assumed).
+Nothing here runs unless LLM mode is chosen. The scripted provider makes tests deterministic;
+Ollama is used only if it is already running locally with the model pulled; Anthropic needs
+ANTHROPIC_API_KEY in the environment and an explicit model id (no default model is assumed).
+
+Every call returns a CompletionResult with the text plus tokens in, tokens out and latency, so
+cost and speed can be measured per call.
 """
 
 from __future__ import annotations
 
 import json
 import os
+import time
 import urllib.request
 from collections.abc import Iterable
+from dataclasses import dataclass
 from typing import Protocol
+
+
+@dataclass
+class CompletionResult:
+    text: str
+    tokens_in: int
+    tokens_out: int
+    latency_s: float
+    model: str
 
 
 class LLMProvider(Protocol):
     name: str
+    model: str
 
-    def complete(self, system: str, prompt: str) -> str: ...
+    def complete(self, system: str, prompt: str, schema: dict | None = None) -> CompletionResult:
+        """One call. With `schema`, the reply must be JSON that matches it."""
+        ...
 
 
 class ProviderUnavailable(RuntimeError):
@@ -28,16 +45,17 @@ class ScriptedLLM:
     """Returns canned responses in order. For tests and offline demos."""
 
     name = "scripted"
+    model = "scripted"
 
     def __init__(self, responses: Iterable[str]):
         self._responses = list(responses)
         self.calls: list[tuple[str, str]] = []
 
-    def complete(self, system: str, prompt: str) -> str:
+    def complete(self, system: str, prompt: str, schema: dict | None = None) -> CompletionResult:
         self.calls.append((system, prompt))
         if not self._responses:
             raise ProviderUnavailable("ScriptedLLM has no responses left")
-        return self._responses.pop(0)
+        return CompletionResult(self._responses.pop(0), 0, 0, 0.0, self.model)
 
 
 class OllamaLLM:
@@ -45,32 +63,59 @@ class OllamaLLM:
 
     name = "ollama"
 
-    def __init__(self, model: str, host: str = "http://127.0.0.1:11434", timeout: float = 120):
+    def __init__(self, model: str, host: str = "http://127.0.0.1:11434", timeout: float = 600):
         self.model = model
         self.host = host.rstrip("/")
         self.timeout = timeout
 
-    def complete(self, system: str, prompt: str) -> str:
-        payload = {"model": self.model, "system": system, "prompt": prompt, "stream": False}
+    def _request(self, path: str, payload: dict | None = None) -> dict:
+        data = json.dumps(payload).encode() if payload is not None else None
         req = urllib.request.Request(
-            f"{self.host}/api/generate",
-            data=json.dumps(payload).encode(),
-            headers={"Content-Type": "application/json"},
+            f"{self.host}{path}", data=data, headers={"Content-Type": "application/json"}
         )
         try:
             with urllib.request.urlopen(req, timeout=self.timeout) as resp:
-                return json.loads(resp.read())["response"]
+                return json.loads(resp.read())
         except OSError as exc:
             raise ProviderUnavailable(f"Ollama not reachable at {self.host}: {exc}") from exc
 
+    def check_pulled(self) -> None:
+        """Refuse to run (and never pull) unless the model is already on this machine."""
+        names = {m["name"] for m in self._request("/api/tags").get("models", [])}
+        if self.model not in names:
+            raise ProviderUnavailable(f"Ollama model {self.model!r} is not pulled; not pulling it")
+
+    def complete(self, system: str, prompt: str, schema: dict | None = None) -> CompletionResult:
+        payload = {
+            "model": self.model,
+            "messages": [
+                {"role": "system", "content": system},
+                {"role": "user", "content": prompt},
+            ],
+            "stream": False,
+        }
+        if schema is not None:
+            payload["format"] = schema
+        start = time.perf_counter()
+        body = self._request("/api/chat", payload)
+        latency = time.perf_counter() - start
+        return CompletionResult(
+            text=body["message"]["content"],
+            tokens_in=int(body.get("prompt_eval_count", 0)),
+            tokens_out=int(body.get("eval_count", 0)),
+            latency_s=latency,
+            model=self.model,
+        )
+
 
 class AnthropicLLM:
-    """Anthropic Messages API. Needs ANTHROPIC_API_KEY and an explicit model id."""
+    """Anthropic Messages API. Reads ANTHROPIC_API_KEY only; needs an explicit model id."""
 
     name = "anthropic"
 
-    def __init__(self, model: str, max_tokens: int = 1024):
-        if not os.environ.get("ANTHROPIC_API_KEY"):
+    def __init__(self, model: str, max_tokens: int = 4096, effort: str = "low"):
+        api_key = os.environ.get("ANTHROPIC_API_KEY")
+        if not api_key:
             raise ProviderUnavailable("ANTHROPIC_API_KEY is not set")
         try:
             import anthropic
@@ -78,16 +123,32 @@ class AnthropicLLM:
             raise ProviderUnavailable("install the extra: uv sync --extra llm") from exc
         self.model = model
         self.max_tokens = max_tokens
-        self._client = anthropic.Anthropic()
+        self.effort = effort
+        self._client = anthropic.Anthropic(api_key=api_key)
 
-    def complete(self, system: str, prompt: str) -> str:
+    def complete(self, system: str, prompt: str, schema: dict | None = None) -> CompletionResult:
+        output_config: dict = {"effort": self.effort}
+        if schema is not None:
+            output_config["format"] = {"type": "json_schema", "schema": schema}
+        start = time.perf_counter()
         msg = self._client.messages.create(
             model=self.model,
             max_tokens=self.max_tokens,
             system=system,
             messages=[{"role": "user", "content": prompt}],
+            output_config=output_config,
         )
-        return "".join(block.text for block in msg.content if block.type == "text")
+        latency = time.perf_counter() - start
+        if msg.stop_reason == "refusal":
+            raise ProviderUnavailable(f"{self.model} declined the request")
+        text = "".join(block.text for block in msg.content if block.type == "text")
+        return CompletionResult(
+            text=text,
+            tokens_in=msg.usage.input_tokens,
+            tokens_out=msg.usage.output_tokens,
+            latency_s=latency,
+            model=self.model,
+        )
 
 
 def make_provider(name: str, *, model: str | None = None, **kwargs) -> LLMProvider:
@@ -96,7 +157,9 @@ def make_provider(name: str, *, model: str | None = None, **kwargs) -> LLMProvid
     if not model:
         raise ProviderUnavailable(f"provider {name!r} needs an explicit model id")
     if name == "ollama":
-        return OllamaLLM(model, **kwargs)
+        provider = OllamaLLM(model, **kwargs)
+        provider.check_pulled()
+        return provider
     if name == "anthropic":
         return AnthropicLLM(model, **kwargs)
     raise ValueError(f"unknown provider: {name}")

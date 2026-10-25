@@ -77,3 +77,9 @@ s19-monthly-windows:
   extraction: {is_enquiry: true, contact_email: ella@novak-studio.example, service: regular_office, frequency: monthly, areas: [[1800, sqft]], add_ons: [interior_windows], out_of_scope: []}
   outcome: quote
   total: "210.60"       # 1800 x 0.07 x 1.10 = 138.60 + 1800 x 0.04 = 72.00, one visit
+
+# Hardening cases: each is added after an LLM row failed a case, never as a prompt edit.
+s20-ongoing-no-schedule:   # added 2026-10-25 after ollama:gpt-oss:20b sent s08 to handoff ("ongoing" read as an unoffered schedule)
+  extraction: {is_enquiry: true, contact_email: leah@brandt-studio.example, service: regular_office, frequency: null, areas: [[2800, sqft]], add_ons: [], out_of_scope: []}
+  outcome: clarification
+  missing: [frequency]

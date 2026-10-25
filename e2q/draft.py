@@ -7,11 +7,20 @@ fields; a handoff is an internal note for a person, never a customer email. In `
 
 from __future__ import annotations
 
+import re
+from collections.abc import Callable
+from decimal import Decimal, InvalidOperation
 from string import Template
 
 from e2q.config import Business
 from e2q.pricing import UNIT_LABEL, fmt_money, price
 from e2q.schema import Draft, Enquiry, NeedsHuman, Quote
+
+DEFAULT_OPENING = "Thanks for getting in touch."
+NUMBER_RE = re.compile(r"\d[\d,]*(?:\.\d+)?")
+
+# Writes a short cover note for a quote, or returns None. Only used in LLM mode.
+CoverWriter = Callable[[Enquiry, Quote], str | None]
 
 TITLES = {"dr", "dr.", "mr", "mr.", "mrs", "mrs.", "ms", "ms.", "prof", "prof."}
 
@@ -83,6 +92,10 @@ def describe_reason(reason: str, business: Business) -> str:
             )
         total = fmt_money_str(rest, card.currency_symbol)
         return f"The total ({total}) is above the automatic quote band."
+    if kind == "unsupported_frequency":
+        return f"The customer asked for a schedule the rate card does not offer ({detail!r})."
+    if kind == "extraction_failed":
+        return f"The extraction step failed ({detail}), so nothing was read reliably."
     if kind == "missing" and detail == "contact_email":
         return "There is no reply address, so a clarification cannot be sent."
     return reason
@@ -122,13 +135,43 @@ def summarize(enquiry: Enquiry) -> str:
     return bullets(rows)
 
 
-def quote_draft(enquiry: Enquiry, quote: Quote, business: Business) -> Draft:
+def numbers_in(text: str) -> set[Decimal]:
+    found = set()
+    for token in NUMBER_RE.findall(text):
+        try:
+            found.add(Decimal(token.replace(",", "")).normalize())
+        except InvalidOperation:
+            continue
+    return found
+
+
+def cover_note_is_safe(note: str, quote: Quote) -> bool:
+    """A cover note may not state any number that is not already in the Quote."""
+    if "$" in note or len(note) > 400:
+        return False
+    return numbers_in(note) <= numbers_in(quote.model_dump_json())
+
+
+def quote_draft(
+    enquiry: Enquiry, quote: Quote, business: Business, cover_writer: CoverWriter | None = None
+) -> Draft:
     sym = business.rate_card.currency_symbol
+    opening, notes = DEFAULT_OPENING, []
+    if cover_writer is not None:
+        try:
+            note = (cover_writer(enquiry, quote) or "").strip()
+        except Exception as exc:  # the template opening is the fallback
+            note, notes = "", [f"cover note failed: {type(exc).__name__}"]
+        if note and cover_note_is_safe(note, quote):
+            opening = note
+        elif note:
+            notes = ["cover note rejected: it stated a number or price not in the quote"]
     subject, tpl = load_template(business, "quote")
     lines = [f"{item.description}: {fmt_money(item.amount, sym)}" for item in quote.line_items]
     body = tpl.substitute(
         business=business.profile.name,
         first_name=first_name(enquiry),
+        opening=opening,
         line_items=bullets(lines),
         total=fmt_money(quote.total, sym),
         period=quote.period,
@@ -144,6 +187,7 @@ def quote_draft(enquiry: Enquiry, quote: Quote, business: Business) -> Draft:
         subject=subject,
         body=body,
         quote=quote,
+        reasons=notes,
     )
 
 
@@ -194,10 +238,12 @@ def handoff_draft(enquiry: Enquiry, reasons: list[str], business: Business) -> D
     )
 
 
-def build_draft(enquiry: Enquiry, business: Business) -> Draft:
+def build_draft(
+    enquiry: Enquiry, business: Business, cover_writer: CoverWriter | None = None
+) -> Draft:
     result = price(enquiry, business.rate_card)
     if isinstance(result, Quote):
-        return quote_draft(enquiry, result, business)
+        return quote_draft(enquiry, result, business, cover_writer)
     assert isinstance(result, NeedsHuman)
     missing = [r.removeprefix("missing:") for r in result.reasons if r.startswith("missing:")]
     if result.only_missing and "contact_email" not in missing:

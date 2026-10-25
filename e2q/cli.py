@@ -11,8 +11,9 @@ import typer
 
 from e2q.config import load_business
 from e2q.draft import build_draft
-from e2q.extract import RuleExtractor
+from e2q.extract import LLMExtractor, RuleExtractor
 from e2q.pricing import fmt_money
+from e2q.providers import ProviderUnavailable, make_provider
 from e2q.queue import AlreadyIngested, ApprovalQueue, QueueError
 from e2q.schema import RawEnquiry
 from e2q.senders import SenderUnavailable, make_sender
@@ -38,6 +39,11 @@ def options(
     state.business_dir = business
 
 
+def _provider_args(row: str) -> tuple[str, str]:
+    provider, model = split_row(row)
+    return provider, model
+
+
 def open_queue() -> ApprovalQueue:
     return ApprovalQueue(state.db)
 
@@ -45,6 +51,14 @@ def open_queue() -> ApprovalQueue:
 def fail(err: QueueError) -> None:
     typer.echo(str(err), err=True)
     raise typer.Exit(err.exit_code)
+
+
+def split_row(row: str) -> tuple[str, str]:
+    """`ollama:gpt-oss:20b` -> ("ollama", "gpt-oss:20b"). The model id is never guessed."""
+    provider, _, model = row.partition(":")
+    if not model:
+        raise typer.BadParameter(f"{row!r}: use provider:model, e.g. ollama:gpt-oss:20b")
+    return provider, model
 
 
 def expand(patterns: list[str]) -> list[Path]:
@@ -59,14 +73,28 @@ def expand(patterns: list[str]) -> list[Path]:
 @app.command()
 def ingest(
     files: list[str] = typer.Argument(..., help="Enquiry JSON files or globs."),
-    llm: bool = typer.Option(False, "--llm", help="LLM extraction (Phase 1, not wired yet)."),
+    llm: str = typer.Option(
+        None,
+        "--llm",
+        help="LLM extraction and cover note, as provider:model (ollama or anthropic).",
+    ),
 ) -> None:
     """Extract, price and draft each enquiry, then park the draft in the approval queue."""
-    if llm:
-        typer.echo("LLM mode is Phase 1 and is not wired yet; run without --llm.", err=True)
-        raise typer.Exit(2)
     business = load_business(state.business_dir)
-    extractor = RuleExtractor(business)
+    cover_writer = None
+    if llm:
+        from e2q.cover import make_cover_writer
+
+        try:
+            name, model = _provider_args(llm)
+            provider = make_provider(name, model=model)
+        except ProviderUnavailable as exc:
+            typer.echo(f"LLM mode unavailable: {exc}", err=True)
+            raise typer.Exit(2) from exc
+        extractor = LLMExtractor(business, provider)
+        cover_writer = make_cover_writer(provider, business)
+    else:
+        extractor = RuleExtractor(business)
     queue = open_queue()
     paths = expand(files)
     if not paths:
@@ -81,9 +109,9 @@ def ingest(
             errors += 1
             continue
         enquiry = extractor.extract(raw)
-        draft = build_draft(enquiry, business)
+        draft = build_draft(enquiry, business, cover_writer)
         try:
-            queue.ingest(raw, enquiry, draft, extractor.name)
+            queue.ingest(raw, enquiry, draft, getattr(extractor, "row_name", extractor.name))
         except AlreadyIngested as exc:
             typer.echo(f"skipped   {exc}")
             continue
@@ -211,14 +239,46 @@ def send(
 @app.command("eval")
 def eval_cmd(
     out: Path = typer.Option(Path("eval/REPORT.md"), help="Where to write the report."),
+    llm: list[str] = typer.Option(
+        None, "--llm", help="Also run this LLM row (provider:model) and save it. Repeatable."
+    ),
 ) -> None:
-    """Run each golden set (original, then held-out if present) and write eval/REPORT.md."""
-    from e2q.evaluate import default_sets, run_eval, write_report
+    """Score RuleExtractor and every saved LLM row on each golden set; write eval/REPORT.md."""
+    from e2q.evaluate import default_sets, run_eval, save_run, saved_runs, skipped, write_report
 
     business = load_business(state.business_dir)
+    sets = default_sets()
+    for row in llm or []:
+        name, model = split_row(row)
+        try:
+            provider = make_provider(name, model=model)
+        except ProviderUnavailable as exc:
+            typer.echo(f"row {row} skipped: {exc}", err=True)
+            for _, golden, _ in sets:
+                save_run(skipped(row, golden, str(exc)), golden)
+            continue
+        for title, golden, samples in sets:
+            typer.echo(f"running {row} on {title} ...", err=True)
+            result = run_eval(
+                business,
+                LLMExtractor(business, provider),
+                golden,
+                samples,
+                row=row,
+                progress=lambda c: typer.echo(
+                    f"  {c.sample_id:<28} {c.outcome:<14} {'MISS' if c.failed else 'ok'}"
+                    f"  {c.latency_s}s",
+                    err=True,
+                ),
+            )
+            typer.echo(f"saved {save_run(result, golden)}", err=True)
     sections = [
-        (title, shown, run_eval(business, golden_path=golden, samples_dir=samples))
-        for title, shown, golden, samples in default_sets()
+        (
+            title,
+            golden,
+            [run_eval(business, golden_path=golden, samples_dir=samples), *saved_runs(golden)],
+        )
+        for title, golden, samples in sets
     ]
     write_report(sections, out)
     typer.echo(out.read_text(encoding="utf-8"))

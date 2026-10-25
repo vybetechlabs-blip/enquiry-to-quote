@@ -1,6 +1,6 @@
 # enquiry-to-quote
 
-**Status: Active, Phase 0 complete, LLM mode pending.**
+**Status: Active, Phase 1 complete except the Claude Haiku row (needs an API key), public standard pending.**
 
 An inbound inquiry (an email or a web-form submission) goes in. A priced draft quote comes out and waits in an approval queue. Nothing is sent until a person approves it.
 
@@ -62,19 +62,29 @@ Other commands: `e2q edit <id> --body-file reply.txt [--subject "..."]` saves a 
 
 ## Evaluation
 
-`uv run e2q eval` runs every sample in the golden set (`eval/golden.yaml`) end to end and writes `eval/REPORT.md`: field-level extraction accuracy, outcome accuracy (quote, clarification or handoff) and whether each expected quote total matches to the cent. The expected values were written by hand from the sample text and the rate card.
+`uv run e2q eval` scores every extractor on two golden sets and writes `eval/REPORT.md`: field-level extraction accuracy, outcome accuracy (quote, clarification or handoff), whether each expected quote total matches to the cent, and whether each clarification asks for exactly the missing fields.
 
-The current extractor is `RuleExtractor`, a deterministic regex and keyword reader. It exists so the tests and the demo run without any key. Its golden-set score shows that the pieces agree with each other. It does not predict how it would do on real inquiries, because the samples and the extractor were written together.
+- **Original set** (`eval/golden.yaml`, `inbox/samples/`): written together with `RuleExtractor`, so its score shows that the pieces agree with each other, not how well they read real inquiries.
+- **Held-out set** (`eval/holdout.yaml`, `inbox/holdout/`): 15 inquiries written separately, without sight of the extractor or the original samples. This is the better guide to accuracy.
+
+`RuleExtractor`, a deterministic regex and keyword reader, is the keyless baseline. LLM rows are added with `--llm provider:model` and saved to `eval/runs/` (one pass each, with tokens, latency and the prompt hash per call), so the report can be rebuilt without calling a model again:
+
+```powershell
+uv run e2q eval --llm ollama:gpt-oss:20b          # local model; it must already be pulled
+uv run e2q eval --llm anthropic:claude-haiku-5-5  # needs ANTHROPIC_API_KEY and: uv sync --extra llm
+```
 
 ## Model providers
 
-LLM mode (`--llm`) is not wired yet. `e2q/providers.py` already holds the factory it will use: a scripted provider for tests, Ollama at `127.0.0.1` if it is running, and Anthropic when `ANTHROPIC_API_KEY` is set and a model id is given. A model may extract fields and write a cover note. The rate card still sets every number.
+`LLMExtractor` sends one call per inquiry through `e2q/providers.py`: Ollama at `127.0.0.1` (never pulls a model), or Anthropic when `ANTHROPIC_API_KEY` is set and a model id is given. Its prompt holds the extraction schema and the service, frequency, add-on and out-of-scope categories from `business/pricing.yaml`; the model never sees a price and never sets one. A reply that does not fit the schema sends the inquiry to a person.
+
+`uv run e2q ingest --llm ollama:gpt-oss:20b "inbox/samples/*.json"` uses the model for extraction and for a short cover note at the top of a quote. A cover note that states any number not already in the quote is dropped and the template's opening line is used instead.
 
 A real sender (`--sender resend`) exists behind `RESEND_API_KEY` and is never exercised by the tests.
 
 ## Roadmap
 
-- **Phase 1:** LLM extraction on the same golden set, side by side with `RuleExtractor`; cost per inquiry; an optional cover note that may not state any number absent from the quote.
+- **Phase 1:** LLM extraction side by side with `RuleExtractor` on both golden sets; cost and latency per inquiry; the cover note.
 - **Phase 2:** documentation and CI to the public standard.
 - **Phase 3 (later):** a web-form intake endpoint, CRM write-back, and a small approval UI.
 

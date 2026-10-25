@@ -1,0 +1,10 @@
+{
+  "extractor": "anthropic:claude-haiku-5-5",
+  "run_date": "2026-10-25",
+  "cases": [],
+  "golden_file": "eval/golden.yaml",
+  "golden_sha": "6defebb9513a",
+  "prompt_sha": null,
+  "status": "skipped",
+  "skip_reason": "ANTHROPIC_API_KEY is not set"
+}

@@ -74,9 +74,25 @@ def test_resend_without_key_is_refused(run, monkeypatch):
     assert result.exit_code == 2 and "RESEND_API_KEY" in result.output
 
 
-def test_llm_flag_is_not_wired_yet(run):
-    result = run("ingest", "--llm", "inbox/samples/s01-complete-email.json")
+def test_llm_ingest_without_key_is_refused(run, monkeypatch):
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    result = run(
+        "ingest", "--llm", "anthropic:claude-haiku-5-5", "inbox/samples/s01-complete-email.json"
+    )
     assert result.exit_code == 2
+    assert "ANTHROPIC_API_KEY is not set" in result.output
+
+
+def test_eval_records_a_skipped_llm_row(run, tmp_path, monkeypatch):
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.setattr("e2q.evaluate.RUNS", tmp_path / "runs")
+    out = tmp_path / "REPORT.md"
+    result = run("eval", "--out", str(out), "--llm", "anthropic:claude-haiku-5-5")
+    assert result.exit_code == 0, result.output
+    text = out.read_text(encoding="utf-8")
+    assert "anthropic:claude-haiku-5-5 (skipped)" in text
+    assert "ANTHROPIC_API_KEY is not set" in text
+    assert list((tmp_path / "runs").glob("anthropic_claude-haiku-5-5__*.json"))
 
 
 def test_eval_writes_report(run, tmp_path):
@@ -84,5 +100,6 @@ def test_eval_writes_report(run, tmp_path):
     result = run("eval", "--out", str(out))
     assert result.exit_code == 0, result.output
     text = out.read_text(encoding="utf-8")
-    assert "Extractor: `RuleExtractor`" in text
+    assert "| Measure | RuleExtractor" in text
+    assert "## Original golden set" in text
     assert "Price exact, on expected quotes" in text

@@ -1,0 +1,14 @@
+# Per-token prices used for "cost per enquiry" in eval/REPORT.md.
+# Every hosted price carries its source URL and fetch date; a model with no entry is reported
+# as `unverified`.
+
+claude-haiku-5-5:
+  input_per_mtok: "0.10"
+  output_per_mtok: "0.50"
+  condition: prompts up to 100,000 tokens
+  source: https://platform.claude.com/docs/en/about-claude/pricing
+  fetched: 2026-10-25
+
+gpt-oss:20b:
+  local: true
+  note: runs on this machine through Ollama; no per-token charge (hardware and power not counted)

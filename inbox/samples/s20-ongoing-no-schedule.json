@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC sample written for this demo. All people, companies and addresses are invented. Added 2026-10-25 as a hardening case after the ollama:gpt-oss:20b row read an open-ended ongoing arrangement (s08) as an unoffered schedule.",
+  "id": "s20-ongoing-no-schedule",
+  "source": "email",
+  "received_at": "2026-10-25T10:00:00Z",
+  "from": "Leah Brandt <leah@brandt-studio.example>",
+  "subject": "Cleaning contract",
+  "body": "Hello,\n\nWe've just signed the lease on a 2,800 sq ft office and want a cleaning company on contract going forward. What would you charge for regular office cleaning?\n\nLeah Brandt"
+}
