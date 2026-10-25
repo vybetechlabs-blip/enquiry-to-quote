@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC held-out enquiry, set 2. Invented business, people and figures. Written 2026-10-25 by a separate agent (Claude chat) that had not seen inbox/samples/, e2q/extract/rules.py or the LLM extraction prompt.",
+  "id": "k01-monthly-bathrooms",
+  "source": "email",
+  "received_at": "2026-10-26T08:05:00+00:00",
+  "from": "Nadir Qureshi <nadir@qureshi-accountants.example>",
+  "subject": "Monthly clean",
+  "body": "Hi,\n\nWe only need a clean once a month, it's a quiet office. 3,000 square feet. Please also keep the bathrooms stocked, toilet rolls and soap, we keep running out.\n\nWhat would the monthly cost be?\n\nNadir Qureshi"
+}

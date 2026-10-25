@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC held-out enquiry, set 2. Invented business, people and figures. Written 2026-10-25 by a separate agent (Claude chat) that had not seen inbox/samples/, e2q/extract/rules.py or the LLM extraction prompt.",
+  "id": "k15-metric-monthly-supplies",
+  "source": "email",
+  "received_at": "2026-10-27T12:20:00+00:00",
+  "from": "Anders Lund <anders@lund-architects.example>",
+  "subject": "Monthly cleaning, 500 m2",
+  "body": "Hello,\n\nWe'd like a monthly clean of our 500 m2 studio, and we'd like you to restock the washroom supplies when you come.\n\nBest,\nAnders Lund"
+}

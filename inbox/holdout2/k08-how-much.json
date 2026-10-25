@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC held-out enquiry, set 2. Invented business, people and figures. Written 2026-10-25 by a separate agent (Claude chat) that had not seen inbox/samples/, e2q/extract/rules.py or the LLM extraction prompt.",
+  "id": "k08-how-much",
+  "source": "email",
+  "received_at": "2026-10-26T15:40:00+00:00",
+  "from": "Zara Hussain <zara@hussain-recruitment.example>",
+  "subject": "Price?",
+  "body": "Hi, how much would it cost to clean an 1,800 sq ft office? Thanks, Zara"
+}

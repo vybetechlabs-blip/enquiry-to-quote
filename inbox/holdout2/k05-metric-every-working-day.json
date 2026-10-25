@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC held-out enquiry, set 2. Invented business, people and figures. Written 2026-10-25 by a separate agent (Claude chat) that had not seen inbox/samples/, e2q/extract/rules.py or the LLM extraction prompt.",
+  "id": "k05-metric-every-working-day",
+  "source": "email",
+  "received_at": "2026-10-26T12:45:00+00:00",
+  "from": "Mateus Ribeiro <mateus@ribeiro-design.example>",
+  "subject": "Cleaning quote",
+  "body": "Good afternoon,\n\nWe are a design studio of about 180 square metres and we would like a clean every working day, after 6pm. Could you send us a monthly figure?\n\nObrigado,\nMateus Ribeiro"
+}

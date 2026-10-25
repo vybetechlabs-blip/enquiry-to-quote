@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC held-out enquiry, set 2. Invented business, people and figures. Written 2026-10-25 by a separate agent (Claude chat) that had not seen inbox/samples/, e2q/extract/rules.py or the LLM extraction prompt.",
+  "id": "k09-call-to-discuss",
+  "source": "email",
+  "received_at": "2026-10-26T16:02:00+00:00",
+  "from": "Bruno Keller <bruno@keller-haulage.example>",
+  "subject": "Cleaner needed",
+  "body": "We need a cleaner for the office. Please call to discuss.\n\nBruno Keller\nKeller Haulage"
+}

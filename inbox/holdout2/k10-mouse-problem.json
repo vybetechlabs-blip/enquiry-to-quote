@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC held-out enquiry, set 2. Invented business, people and figures. Written 2026-10-25 by a separate agent (Claude chat) that had not seen inbox/samples/, e2q/extract/rules.py or the LLM extraction prompt.",
+  "id": "k10-mouse-problem",
+  "source": "email",
+  "received_at": "2026-10-27T07:55:00+00:00",
+  "from": "Fiona Walsh <fiona@walsh-bakery-hq.example>",
+  "subject": "Weekly clean and a mouse problem",
+  "body": "Hi,\n\nWe need a weekly clean of our 2,000 sq ft head office. We've also got a mouse problem in the storeroom, can you deal with that as part of it?\n\nFiona"
+}

@@ -1,0 +1,17 @@
+{
+  "_synthetic": "SYNTHETIC held-out enquiry, set 2. Invented business, people and figures. Written 2026-10-25 by a separate agent (Claude chat) that had not seen inbox/samples/, e2q/extract/rules.py or the LLM extraction prompt.",
+  "id": "k02-carpet-form",
+  "source": "webform",
+  "received_at": "2026-10-26T09:20:00+00:00",
+  "fields": {
+    "name": "Olivia Brandt",
+    "email": "olivia@brandt-events.example",
+    "company": "Brandt Events",
+    "service": "Carpet",
+    "frequency": "One time",
+    "area": "1,500",
+    "area_unit": "sq ft",
+    "extras": "",
+    "message": "Red wine stains from a client event, the whole floor really needs doing."
+  }
+}

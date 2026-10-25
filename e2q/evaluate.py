@@ -28,11 +28,17 @@ GOLDEN = ROOT / "eval" / "golden.yaml"
 SAMPLES = ROOT / "inbox" / "samples"
 HOLDOUT = ROOT / "eval" / "holdout.yaml"
 HOLDOUT_SAMPLES = ROOT / "inbox" / "holdout"
+HOLDOUT2 = ROOT / "eval" / "holdout2.yaml"
+HOLDOUT2_SAMPLES = ROOT / "inbox" / "holdout2"
 RUNS = ROOT / "eval" / "runs"
 PRICES = ROOT / "eval" / "model-prices.yaml"
 FIELDS = ("is_enquiry", "contact_email", "service", "frequency", "areas", "add_ons", "out_of_scope")
-# Held-out cases a client is most likely to ask about; shown side by side for every row.
-CASES_TO_WATCH = ("h10-ps-injection", "h11-job-applicant", "h13-area-range", "h15-daily-fridge")
+# Held-out cases a client is most likely to ask about, per golden file; shown for every row.
+CASES_TO_WATCH: dict[str, tuple[str, ...]] = {
+    "holdout": ("h10-ps-injection", "h11-job-applicant", "h13-area-range", "h15-daily-fridge"),
+    # From the "Cases to watch" list in the eval/holdout2.yaml header.
+    "holdout2": ("k06", "k07", "k09", "k10", "k11", "k13"),
+}
 
 
 def observed(enquiry: Enquiry) -> dict:
@@ -323,32 +329,54 @@ def render_set(title: str, golden_path: Path, results: list[EvalResult]) -> list
     return out  # fmt: skip
 
 
-def render_watch(golden_path: Path, results: list[EvalResult]) -> list[str]:
-    current = sha(golden_path)
-    live = [r for r in results if r.status == "ok" and r.golden_sha == current]
-    if not live:
+def render_watch(sets: list[tuple[str, Path, list[EvalResult]]]) -> list[str]:
+    """One table across every held-out set and every row (a row that did not run says so)."""
+    rows: list[str] = []
+    names: list[str] = []
+    for _title, _golden, results in sets:
+        for r in results:
+            if r.extractor not in names:
+                names.append(r.extractor)
+    for title, golden_path, results in sets:
+        ids = CASES_TO_WATCH.get(golden_path.stem, ())
+        if not ids:
+            continue
+        current = sha(golden_path)
+        golden = yaml.safe_load(golden_path.read_text(encoding="utf-8"))
+        by_name = {r.extractor: r for r in results}
+        # An id may be a full sample id or its prefix ("k06" for "k06-large-daily").
+        resolved = [g for cid in ids for g in golden if g == cid or g.startswith(f"{cid}-")]
+        for case_id in resolved:
+            cells = []
+            for name in names:
+                r = by_name.get(name)
+                if r is None or r.status != "ok":
+                    cells.append("not run")
+                    continue
+                if r.golden_sha != current:
+                    cells.append("stale")
+                    continue
+                c = next(c for c in r.cases if c.sample_id == case_id)
+                extra = f", asked {c.asked}" if c.outcome == "clarification" else ""
+                extra += f", total {c.total}" if c.total else ""
+                cells.append(f"{c.outcome}{extra} ({'MISS' if c.failed else 'ok'})")
+            rows.append(
+                f"| {title} | {case_id} | {golden[case_id]['outcome']} | "
+                + " | ".join(cells)
+                + " |"
+            )
+    if not rows:
         return []
-    golden = yaml.safe_load(golden_path.read_text(encoding="utf-8"))
-    out = [
+    return [
         "## Cases to watch",
         "",
         "Held-out cases a client is most likely to ask about, with each row's outcome.",
         "",
-        "| Case | Expected | " + " | ".join(r.extractor for r in live) + " |",
-        "|---|---|" + "---|" * len(live),
+        "| Set | Case | Expected | " + " | ".join(names) + " |",
+        "|---|---|---|" + "---|" * len(names),
+        *rows,
+        "",
     ]
-    for case_id in CASES_TO_WATCH:
-        if case_id not in golden:
-            continue
-        cells = []
-        for r in live:
-            c = next(c for c in r.cases if c.sample_id == case_id)
-            mark = "ok" if not c.failed else "MISS"
-            extra = f", asked {c.asked}" if c.outcome == "clarification" else ""
-            extra += f", total {c.total}" if c.total else ""
-            cells.append(f"{c.outcome}{extra} ({mark})")
-        out.append(f"| {case_id} | {golden[case_id]['outcome']} | " + " | ".join(cells) + " |")
-    return [*out, ""]
 
 
 def render_cost(all_results: list[EvalResult], prices: dict) -> list[str]:
@@ -428,9 +456,7 @@ def render_report(
     for title, golden_path, results in sets:
         out += render_set(title, golden_path, results)
         all_results += results
-    for _title, golden_path, results in sets:
-        if golden_path == HOLDOUT or golden_path.stem == "holdout":
-            out += render_watch(golden_path, results)
+    out += render_watch(sets)
     out += render_cost(all_results, prices or {})
     return "\n".join(out).rstrip("\n") + "\n"
 
@@ -440,6 +466,8 @@ def default_sets() -> list[tuple[str, Path, Path]]:
     sets = [("Original golden set", GOLDEN, SAMPLES)]
     if HOLDOUT.exists():
         sets.append(("Held-out set", HOLDOUT, HOLDOUT_SAMPLES))
+    if HOLDOUT2.exists():
+        sets.append(("Held-out set 2", HOLDOUT2, HOLDOUT2_SAMPLES))
     return sets
 
 

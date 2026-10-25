@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC held-out enquiry, set 2. Invented business, people and figures. Written 2026-10-25 by a separate agent (Claude chat) that had not seen inbox/samples/, e2q/extract/rules.py or the LLM extraction prompt.",
+  "id": "k13-correction-reply-chain",
+  "source": "email",
+  "received_at": "2026-10-27T10:40:00+00:00",
+  "from": "Ivan Novak <ivan@novak-engineering.example>",
+  "subject": "Re: Weekly cleaning quote",
+  "body": "Correction on the size: it's 4,200 sq ft, not 2,400, I had the wrong floor plan. Still weekly.\n\nIvan\n\n> On 26 Oct, Ivan Novak wrote:\n> Hi, could you quote for weekly cleaning of our 2,400 sq ft office?\n> Ivan"
+}

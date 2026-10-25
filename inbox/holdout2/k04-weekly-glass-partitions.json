@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC held-out enquiry, set 2. Invented business, people and figures. Written 2026-10-25 by a separate agent (Claude chat) that had not seen inbox/samples/, e2q/extract/rules.py or the LLM extraction prompt.",
+  "id": "k04-weekly-glass-partitions",
+  "source": "email",
+  "received_at": "2026-10-26T11:30:00+00:00",
+  "from": "Amara Osei <amara.osei@osei-dental-lab.example>",
+  "subject": "Weekly cleaning plus windows",
+  "body": "Hi,\n\nWe'd like a weekly clean of our 2,500 sq ft lab and office. Could you include the inside of the glass partitions and windows too? They get fingerprints all over them.\n\nThanks,\nAmara"
+}

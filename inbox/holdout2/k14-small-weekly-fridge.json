@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC held-out enquiry, set 2. Invented business, people and figures. Written 2026-10-25 by a separate agent (Claude chat) that had not seen inbox/samples/, e2q/extract/rules.py or the LLM extraction prompt.",
+  "id": "k14-small-weekly-fridge",
+  "source": "email",
+  "received_at": "2026-10-27T11:05:00+00:00",
+  "from": "Sofia Rossi <sofia@rossi-translations.example>",
+  "subject": "Small office, weekly",
+  "body": "Hi,\n\nIt's a small office, roughly 700 square feet, four of us. Weekly would be ideal. Could you also give the fridge and microwave a wipe each time? They get grim.\n\nSofia"
+}

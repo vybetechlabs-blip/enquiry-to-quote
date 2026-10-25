@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC held-out enquiry, set 2. Invented business, people and figures. Written 2026-10-25 by a separate agent (Claude chat) that had not seen inbox/samples/, e2q/extract/rules.py or the LLM extraction prompt.",
+  "id": "k07-three-branches",
+  "source": "email",
+  "received_at": "2026-10-26T14:25:00+00:00",
+  "from": "Hiro Tanaka <hiro@tanaka-insurance.example>",
+  "subject": "Three branches, every two weeks",
+  "body": "Hi,\n\nWe have three branch offices we'd like cleaned every two weeks: the main branch is 2,000 sq ft, the second is 3,000 sq ft and the third is a small one at 800 sq ft.\n\nOne quote for all three please.\n\nHiro Tanaka"
+}

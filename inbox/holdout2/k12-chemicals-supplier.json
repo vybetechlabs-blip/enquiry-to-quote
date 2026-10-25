@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC held-out enquiry, set 2. Invented business, people and figures. Written 2026-10-25 by a separate agent (Claude chat) that had not seen inbox/samples/, e2q/extract/rules.py or the LLM extraction prompt.",
+  "id": "k12-chemicals-supplier",
+  "source": "email",
+  "received_at": "2026-10-27T09:15:00+00:00",
+  "from": "Sales <sales@cleanpro-wholesale.example>",
+  "subject": "Wholesale pricing on microfiber and chemicals",
+  "body": "Hi there,\n\nWe supply commercial cleaning companies with microfiber cloths, floor pads and concentrated chemicals at wholesale prices. Minimum order $500. Reply for our catalogue and a 10% first-order discount.\n\nCleanPro Wholesale"
+}

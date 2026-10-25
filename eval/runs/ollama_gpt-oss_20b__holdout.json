@@ -15,8 +15,8 @@
       "reasons": [],
       "detail": {},
       "tokens_in": 713,
-      "tokens_out": 468,
-      "latency_s": 3.59
+      "tokens_out": 557,
+      "latency_s": 4.41
     },
     {
       "sample_id": "h02-every-other-week-form",
@@ -31,8 +31,8 @@
       "reasons": [],
       "detail": {},
       "tokens_in": 700,
-      "tokens_out": 563,
-      "latency_s": 4.4
+      "tokens_out": 910,
+      "latency_s": 7.29
     },
     {
       "sample_id": "h03-move-in-thorough",
@@ -47,24 +47,53 @@
       "reasons": [],
       "detail": {},
       "tokens_in": 724,
-      "tokens_out": 404,
-      "latency_s": 3.18
+      "tokens_out": 535,
+      "latency_s": 4.37
     },
     {
       "sample_id": "h04-carpets-shampoo",
       "expected_outcome": "quote",
-      "outcome": "quote",
+      "outcome": "handoff",
       "expected_total": "270.00",
-      "total": "270.00",
-      "field_errors": [],
+      "total": null,
+      "field_errors": [
+        "is_enquiry",
+        "service",
+        "frequency",
+        "areas"
+      ],
       "clarification_exact": null,
       "expected_missing": [],
       "asked": [],
-      "reasons": [],
-      "detail": {},
+      "reasons": [
+        "not_an_enquiry"
+      ],
+      "detail": {
+        "is_enquiry": {
+          "want": true,
+          "got": false
+        },
+        "service": {
+          "want": "carpet_cleaning",
+          "got": null
+        },
+        "frequency": {
+          "want": "one_off",
+          "got": null
+        },
+        "areas": {
+          "want": [
+            [
+              900,
+              "sqft"
+            ]
+          ],
+          "got": []
+        }
+      },
       "tokens_in": 685,
-      "tokens_out": 547,
-      "latency_s": 4.15
+      "tokens_out": 1762,
+      "latency_s": 13.89
     },
     {
       "sample_id": "h05-metric-fortnightly",
@@ -79,8 +108,8 @@
       "reasons": [],
       "detail": {},
       "tokens_in": 685,
-      "tokens_out": 496,
-      "latency_s": 3.78
+      "tokens_out": 658,
+      "latency_s": 5.29
     },
     {
       "sample_id": "h06-form-no-email",
@@ -97,8 +126,8 @@
       ],
       "detail": {},
       "tokens_in": 687,
-      "tokens_out": 541,
-      "latency_s": 4.11
+      "tokens_out": 772,
+      "latency_s": 6.17
     },
     {
       "sample_id": "h07-twelve-desks-no-area",
@@ -119,8 +148,8 @@
       ],
       "detail": {},
       "tokens_in": 690,
-      "tokens_out": 636,
-      "latency_s": 4.84
+      "tokens_out": 425,
+      "latency_s": 3.47
     },
     {
       "sample_id": "h08-two-locations",
@@ -135,8 +164,8 @@
       "reasons": [],
       "detail": {},
       "tokens_in": 704,
-      "tokens_out": 327,
-      "latency_s": 2.61
+      "tokens_out": 519,
+      "latency_s": 4.18
     },
     {
       "sample_id": "h09-twice-a-week",
@@ -149,12 +178,12 @@
       "expected_missing": [],
       "asked": [],
       "reasons": [
-        "unsupported_frequency:twice a week, Tuesday and Friday nights"
+        "unsupported_frequency:twice a week"
       ],
       "detail": {},
       "tokens_in": 703,
-      "tokens_out": 568,
-      "latency_s": 4.4
+      "tokens_out": 477,
+      "latency_s": 3.83
     },
     {
       "sample_id": "h10-ps-injection",
@@ -171,8 +200,8 @@
       ],
       "detail": {},
       "tokens_in": 711,
-      "tokens_out": 418,
-      "latency_s": 3.21
+      "tokens_out": 421,
+      "latency_s": 3.43
     },
     {
       "sample_id": "h11-job-applicant",
@@ -189,8 +218,8 @@
       ],
       "detail": {},
       "tokens_in": 695,
-      "tokens_out": 244,
-      "latency_s": 1.98
+      "tokens_out": 473,
+      "latency_s": 3.82
     },
     {
       "sample_id": "h12-glass-facade",
@@ -198,24 +227,17 @@
       "outcome": "handoff",
       "expected_total": null,
       "total": null,
-      "field_errors": [
-        "service"
-      ],
+      "field_errors": [],
       "clarification_exact": null,
       "expected_missing": [],
       "asked": [],
       "reasons": [
         "out_of_scope:exterior_windows"
       ],
-      "detail": {
-        "service": {
-          "want": "regular_office",
-          "got": null
-        }
-      },
+      "detail": {},
       "tokens_in": 697,
-      "tokens_out": 843,
-      "latency_s": 6.38
+      "tokens_out": 642,
+      "latency_s": 5.17
     },
     {
       "sample_id": "h13-area-range",
@@ -236,8 +258,8 @@
       ],
       "detail": {},
       "tokens_in": 691,
-      "tokens_out": 566,
-      "latency_s": 4.28
+      "tokens_out": 709,
+      "latency_s": 5.66
     },
     {
       "sample_id": "h14-kiosk-tiny",
@@ -254,8 +276,8 @@
       ],
       "detail": {},
       "tokens_in": 686,
-      "tokens_out": 565,
-      "latency_s": 4.31
+      "tokens_out": 393,
+      "latency_s": 3.19
     },
     {
       "sample_id": "h15-daily-fridge",
@@ -270,8 +292,8 @@
       "reasons": [],
       "detail": {},
       "tokens_in": 713,
-      "tokens_out": 643,
-      "latency_s": 4.92
+      "tokens_out": 376,
+      "latency_s": 3.07
     }
   ],
   "golden_file": "eval/holdout.yaml",

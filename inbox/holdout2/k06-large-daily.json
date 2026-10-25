@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC held-out enquiry, set 2. Invented business, people and figures. Written 2026-10-25 by a separate agent (Claude chat) that had not seen inbox/samples/, e2q/extract/rules.py or the LLM extraction prompt.",
+  "id": "k06-large-daily",
+  "source": "email",
+  "received_at": "2026-10-26T13:10:00+00:00",
+  "from": "Claire Dubois <claire.dubois@dubois-fulfilment.example>",
+  "subject": "Daily cleaning, large site",
+  "body": "Hello,\n\nWe're looking for daily cleaning (Mon to Fri) of our 55,000 sq ft office and packing floor. Open plan, break rooms on both floors, six bathrooms.\n\nPlease quote per month.\n\nClaire Dubois\nFacilities, Dubois Fulfilment"
+}

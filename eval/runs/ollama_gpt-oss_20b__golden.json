@@ -5,18 +5,47 @@
     {
       "sample_id": "s01-complete-email",
       "expected_outcome": "quote",
-      "outcome": "quote",
+      "outcome": "handoff",
       "expected_total": "1197.00",
-      "total": "1197.00",
-      "field_errors": [],
+      "total": null,
+      "field_errors": [
+        "contact_email",
+        "service",
+        "frequency",
+        "areas"
+      ],
       "clarification_exact": null,
       "expected_missing": [],
       "asked": [],
-      "reasons": [],
-      "detail": {},
-      "tokens_in": 712,
-      "tokens_out": 707,
-      "latency_s": 5.55
+      "reasons": [
+        "extraction_failed:ProviderUnavailable"
+      ],
+      "detail": {
+        "contact_email": {
+          "want": "dana.okafor@northwind-accounting.example",
+          "got": null
+        },
+        "service": {
+          "want": "regular_office",
+          "got": null
+        },
+        "frequency": {
+          "want": "weekly",
+          "got": null
+        },
+        "areas": {
+          "want": [
+            [
+              4500,
+              "sqft"
+            ]
+          ],
+          "got": []
+        }
+      },
+      "tokens_in": null,
+      "tokens_out": null,
+      "latency_s": null
     },
     {
       "sample_id": "s02-complete-webform",
@@ -31,8 +60,8 @@
       "reasons": [],
       "detail": {},
       "tokens_in": 696,
-      "tokens_out": 425,
-      "latency_s": 3.38
+      "tokens_out": 289,
+      "latency_s": 9.71
     },
     {
       "sample_id": "s03-deep-clean",
@@ -47,8 +76,8 @@
       "reasons": [],
       "detail": {},
       "tokens_in": 695,
-      "tokens_out": 559,
-      "latency_s": 4.27
+      "tokens_out": 361,
+      "latency_s": 2.99
     },
     {
       "sample_id": "s04-metric-units",
@@ -63,8 +92,8 @@
       "reasons": [],
       "detail": {},
       "tokens_in": 677,
-      "tokens_out": 325,
-      "latency_s": 2.55
+      "tokens_out": 439,
+      "latency_s": 3.55
     },
     {
       "sample_id": "s05-carpet",
@@ -79,8 +108,8 @@
       "reasons": [],
       "detail": {},
       "tokens_in": 678,
-      "tokens_out": 423,
-      "latency_s": 3.25
+      "tokens_out": 410,
+      "latency_s": 3.34
     },
     {
       "sample_id": "s06-below-minimum",
@@ -95,8 +124,8 @@
       "reasons": [],
       "detail": {},
       "tokens_in": 673,
-      "tokens_out": 429,
-      "latency_s": 3.26
+      "tokens_out": 352,
+      "latency_s": 2.89
     },
     {
       "sample_id": "s07-missing-area",
@@ -117,8 +146,8 @@
       ],
       "detail": {},
       "tokens_in": 678,
-      "tokens_out": 597,
-      "latency_s": 4.5
+      "tokens_out": 752,
+      "latency_s": 5.99
     },
     {
       "sample_id": "s08-missing-frequency",
@@ -133,12 +162,12 @@
       ],
       "asked": [],
       "reasons": [
-        "unsupported_frequency:ongoing"
+        "unsupported_frequency:ongoing office cleaning"
       ],
       "detail": {},
       "tokens_in": 667,
-      "tokens_out": 467,
-      "latency_s": 3.65
+      "tokens_out": 824,
+      "latency_s": 6.53
     },
     {
       "sample_id": "s09-ambiguous-service",
@@ -162,8 +191,8 @@
       ],
       "detail": {},
       "tokens_in": 687,
-      "tokens_out": 441,
-      "latency_s": 3.52
+      "tokens_out": 482,
+      "latency_s": 3.88
     },
     {
       "sample_id": "s10-two-sites",
@@ -178,8 +207,8 @@
       "reasons": [],
       "detail": {},
       "tokens_in": 694,
-      "tokens_out": 887,
-      "latency_s": 7.21
+      "tokens_out": 641,
+      "latency_s": 5.16
     },
     {
       "sample_id": "s11-out-of-scope",
@@ -187,17 +216,38 @@
       "outcome": "handoff",
       "expected_total": null,
       "total": null,
-      "field_errors": [],
+      "field_errors": [
+        "areas"
+      ],
       "clarification_exact": null,
       "expected_missing": [],
       "asked": [],
       "reasons": [
         "out_of_scope:pressure_washing"
       ],
-      "detail": {},
+      "detail": {
+        "areas": {
+          "want": [
+            [
+              1000,
+              "sqft"
+            ]
+          ],
+          "got": [
+            [
+              null,
+              null
+            ],
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
       "tokens_in": 669,
-      "tokens_out": 884,
-      "latency_s": 6.85
+      "tokens_out": 1737,
+      "latency_s": 13.51
     },
     {
       "sample_id": "s12-sanity-band",
@@ -214,8 +264,8 @@
       ],
       "detail": {},
       "tokens_in": 668,
-      "tokens_out": 692,
-      "latency_s": 5.72
+      "tokens_out": 416,
+      "latency_s": 3.41
     },
     {
       "sample_id": "s13-reply-chain",
@@ -230,8 +280,8 @@
       "reasons": [],
       "detail": {},
       "tokens_in": 747,
-      "tokens_out": 510,
-      "latency_s": 4.34
+      "tokens_out": 889,
+      "latency_s": 7.09
     },
     {
       "sample_id": "s14-prompt-injection",
@@ -248,8 +298,8 @@
       ],
       "detail": {},
       "tokens_in": 683,
-      "tokens_out": 543,
-      "latency_s": 4.17
+      "tokens_out": 416,
+      "latency_s": 3.37
     },
     {
       "sample_id": "s15-vendor-spam",
@@ -266,8 +316,8 @@
       ],
       "detail": {},
       "tokens_in": 694,
-      "tokens_out": 627,
-      "latency_s": 4.71
+      "tokens_out": 742,
+      "latency_s": 5.84
     },
     {
       "sample_id": "s16-webform-incomplete",
@@ -291,8 +341,8 @@
       ],
       "detail": {},
       "tokens_in": 678,
-      "tokens_out": 327,
-      "latency_s": 2.57
+      "tokens_out": 531,
+      "latency_s": 4.33
     },
     {
       "sample_id": "s17-daily-supplies",
@@ -307,8 +357,8 @@
       "reasons": [],
       "detail": {},
       "tokens_in": 676,
-      "tokens_out": 408,
-      "latency_s": 3.21
+      "tokens_out": 957,
+      "latency_s": 7.54
     },
     {
       "sample_id": "s18-mixed-out-of-scope",
@@ -325,8 +375,8 @@
       ],
       "detail": {},
       "tokens_in": 681,
-      "tokens_out": 749,
-      "latency_s": 5.61
+      "tokens_out": 771,
+      "latency_s": 6.11
     },
     {
       "sample_id": "s19-monthly-windows",
@@ -341,8 +391,8 @@
       "reasons": [],
       "detail": {},
       "tokens_in": 670,
-      "tokens_out": 591,
-      "latency_s": 4.48
+      "tokens_out": 550,
+      "latency_s": 4.4
     },
     {
       "sample_id": "s20-ongoing-no-schedule",
@@ -363,8 +413,8 @@
       ],
       "detail": {},
       "tokens_in": 683,
-      "tokens_out": 776,
-      "latency_s": 5.81
+      "tokens_out": 459,
+      "latency_s": 3.71
     }
   ],
   "golden_file": "eval/golden.yaml",

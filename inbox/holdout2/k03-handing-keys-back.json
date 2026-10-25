@@ -1,0 +1,9 @@
+{
+  "_synthetic": "SYNTHETIC held-out enquiry, set 2. Invented business, people and figures. Written 2026-10-25 by a separate agent (Claude chat) that had not seen inbox/samples/, e2q/extract/rules.py or the LLM extraction prompt.",
+  "id": "k03-handing-keys-back",
+  "source": "email",
+  "received_at": "2026-10-26T10:12:00+00:00",
+  "from": "Leon Marsden <leon@marsden-tech.example>",
+  "subject": "Clean before we hand the keys back",
+  "body": "Hello,\n\nOur lease ends on the 31st and the landlord wants the place spotless before we hand the keys back. It's 2,800 sq ft, mostly open plan, one kitchen, two bathrooms. Everything will be out of there by the 29th.\n\nCan you do it and what's the price?\n\nLeon"
+}
