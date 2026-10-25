@@ -2,22 +2,22 @@
 
 from __future__ import annotations
 
-import glob
 import json
 from decimal import Decimal
 from pathlib import Path
 
 import typer
 import yaml
+from smb_agent_kit.cli import add_approval_commands, expand, split_row
 
 from e2q.config import load_business
 from e2q.draft import build_draft
 from e2q.extract import GuardedExtractor, LLMExtractor, RuleExtractor
 from e2q.pricing import fmt_money
 from e2q.providers import CachedLLM, ProviderUnavailable, make_provider
-from e2q.queue import AlreadyIngested, ApprovalQueue, QueueError
+from e2q.queue import AlreadyIngested, ApprovalQueue
 from e2q.schema import RawEnquiry
-from e2q.senders import SenderUnavailable, make_sender
+from e2q.senders import make_sender
 
 app = typer.Typer(add_completion=False, no_args_is_help=True, help=__doc__)
 ACTOR = "owner"  # every CLI transition is logged as the owner
@@ -49,26 +49,19 @@ def open_queue() -> ApprovalQueue:
     return ApprovalQueue(state.db)
 
 
-def fail(err: QueueError) -> None:
-    typer.echo(str(err), err=True)
-    raise typer.Exit(err.exit_code)
+def _quote_total(draft: dict) -> str:
+    """TOTAL column in `list`: the quote's total, from the draft's payload."""
+    if not draft["payload_json"]:
+        return ""
+    sym = load_business(state.business_dir).rate_card.currency_symbol
+    return fmt_money(Decimal(json.loads(draft["payload_json"])["total"]), sym)
 
 
-def split_row(row: str) -> tuple[str, str]:
-    """`ollama:gpt-oss:20b` -> ("ollama", "gpt-oss:20b"). The model id is never guessed."""
-    provider, _, model = row.partition(":")
-    if not model:
-        raise typer.BadParameter(f"{row!r}: use provider:model, e.g. ollama:gpt-oss:20b")
-    return provider, model
-
-
-def expand(patterns: list[str]) -> list[Path]:
-    """Expand globs here: PowerShell passes `*.json` through unexpanded."""
-    paths: list[Path] = []
-    for pattern in patterns:
-        matches = sorted(glob.glob(pattern)) if any(c in pattern for c in "*?[") else [pattern]
-        paths += [Path(m) for m in matches]
-    return paths
+def _rule_ids(draft: dict) -> list[str]:
+    """Extra lines in `show`: the rule ids that produced the quote."""
+    if not draft["payload_json"]:
+        return []
+    return ["", f"rule ids: {', '.join(json.loads(draft['payload_json'])['rule_ids'])}"]
 
 
 @app.command()
@@ -128,119 +121,15 @@ def ingest(
         raise typer.Exit(1)
 
 
-@app.command("list")
-def list_cmd() -> None:
-    """List every draft with its kind, state and total."""
-    business = load_business(state.business_dir)
-    sym = business.rate_card.currency_symbol
-    queue = open_queue()
-    rows = queue.list()
-    typer.echo(f"{'ID':<28} {'KIND':<14} {'STATE':<9} {'VER':>3}  {'TOTAL':>12}  TO")
-    for r in rows:
-        total = ""
-        if r["quote_json"]:
-            quote = json.loads(r["quote_json"])
-            total = fmt_money(Decimal(quote["total"]), sym)
-        typer.echo(
-            f"{r['enquiry_id']:<28} {r['kind']:<14} {r['state']:<9} {r['version']:>3}  "
-            f"{total:>12}  {r['to_addr'] or '-'}"
-        )
-    typer.echo(f"{len(rows)} draft(s)")
-    queue.close()
-
-
-@app.command()
-def show(enquiry_id: str) -> None:
-    """Show one draft, what was extracted, and its full transition and send history."""
-    queue = open_queue()
-    try:
-        info = queue.show(enquiry_id)
-    except QueueError as err:
-        fail(err)
-    d = info["draft"]
-    typer.echo(f"{d['enquiry_id']}  kind={d['kind']}  state={d['state']}  version={d['version']}")
-    typer.echo(f"To: {d['to_addr'] or '-'}\nSubject: {d['subject']}\n")
-    typer.echo(d["body"])
-    if d["quote_json"]:
-        quote = json.loads(d["quote_json"])
-        typer.echo(f"\nrule ids: {', '.join(quote['rule_ids'])}")
-    typer.echo("\nextracted:")
-    typer.echo(json.dumps(info["enquiry"], indent=2))
-    typer.echo("\nhistory:")
-    for t in info["transitions"]:
-        note = f"  ({t['note']})" if t["note"] else ""
-        typer.echo(
-            f"  {t['at']}  v{t['version']}  {t['from_state'] or '-'} -> {t['to_state']}"
-            f"  by {t['actor']}{note}"
-        )
-    for s in info["send_log"]:
-        typer.echo(f"  sent v{s['version']} at {s['sent_at']} via {s['sender']}: {s['ref']}")
-    queue.close()
-
-
-@app.command()
-def approve(enquiry_id: str) -> None:
-    """Approve a draft for sending."""
-    queue = open_queue()
-    try:
-        queue.approve(enquiry_id, actor=ACTOR)
-    except QueueError as err:
-        fail(err)
-    typer.echo(f"approved  {enquiry_id}")
-    queue.close()
-
-
-@app.command()
-def reject(enquiry_id: str, note: str = typer.Option(None, help="Why it was rejected.")) -> None:
-    """Reject a draft. Rejected drafts can never be sent."""
-    queue = open_queue()
-    try:
-        queue.reject(enquiry_id, actor=ACTOR, note=note)
-    except QueueError as err:
-        fail(err)
-    typer.echo(f"rejected  {enquiry_id}")
-    queue.close()
-
-
-@app.command()
-def edit(
-    enquiry_id: str,
-    body_file: Path = typer.Option(None, help="File holding the new body."),
-    subject: str = typer.Option(None, help="New subject line."),
-) -> None:
-    """Replace the subject and/or body. Saved as a new version in state `edited`."""
-    if body_file is None and subject is None:
-        typer.echo("nothing to edit: pass --body-file and/or --subject", err=True)
-        raise typer.Exit(1)
-    body = body_file.read_text(encoding="utf-8") if body_file else None
-    queue = open_queue()
-    try:
-        version = queue.edit(enquiry_id, body=body, subject=subject, actor=ACTOR)
-    except QueueError as err:
-        fail(err)
-    typer.echo(f"edited    {enquiry_id} -> v{version}")
-    queue.close()
-
-
-@app.command()
-def send(
-    enquiry_id: str,
-    sender: str = typer.Option("dry-run", help="dry-run (writes outbox/) or resend (needs key)."),
-) -> None:
-    """Send an approved or edited draft. Refuses anything else, and refuses a repeat send."""
-    business = load_business(state.business_dir)
-    try:
-        backend = make_sender(sender)
-    except SenderUnavailable as exc:
-        typer.echo(f"refused: {exc}", err=True)
-        raise typer.Exit(2) from exc
-    queue = open_queue()
-    try:
-        ref = queue.send(enquiry_id, backend, business.profile.reply_from, actor=ACTOR)
-    except QueueError as err:
-        fail(err)
-    typer.echo(f"sent      {enquiry_id} via {backend.name}: {ref}")
-    queue.close()
+add_approval_commands(
+    app,
+    open_queue=lambda: open_queue(),
+    make_sender=lambda name: make_sender(name),
+    reply_from=lambda: load_business(state.business_dir).profile.reply_from,
+    actor=ACTOR,
+    list_total=_quote_total,
+    show_extra=_rule_ids,
+)
 
 
 @app.command("eval")

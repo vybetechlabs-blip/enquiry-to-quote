@@ -12,10 +12,8 @@ A reply that is not valid JSON for the schema does not raise: the enquiry is mar
 
 from __future__ import annotations
 
-import json
-import re
-
 from pydantic import BaseModel, ValidationError
+from smb_agent_kit.llm import parse_json_reply
 
 from e2q.config import Business
 from e2q.providers import CompletionResult, LLMProvider
@@ -186,10 +184,7 @@ def render_message(raw: RawEnquiry) -> str:
 
 def parse_reply(text: str) -> LLMExtraction:
     """Parse the model's JSON. Tolerates a fenced block; anything else is a failure."""
-    stripped = text.strip()
-    fenced = re.search(r"\{.*\}", stripped, re.S)
-    payload = fenced.group(0) if fenced else stripped
-    return LLMExtraction.model_validate(json.loads(payload))
+    return parse_json_reply(text, LLMExtraction)
 
 
 class LLMExtractor:
